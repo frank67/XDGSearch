@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon/show-menu.svgz</file>
+        <file>icon/edit-find.svgz</file>
+        <file>icon/list-add.svgz</file>
+        <file>icon/list-remove.svgz</file>
+    </qresource>
+</RCC>
