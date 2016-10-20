@@ -46,44 +46,37 @@ public:
     explicit Wizard(QWidget *parent = 0);
     ~Wizard();
 protected:
-    bool validateCurrentPage() Q_DECL_OVERRIDE;
-    void initializePage(int) Q_DECL_OVERRIDE;
+    bool validateCurrentPage() Q_DECL_OVERRIDE;     // calls proper validatePage?() function member
+    void initializePage(int) Q_DECL_OVERRIDE;       // calls proper fillPage?Widget() function member
 
 private slots:
-    void on_desktopDirButton_clicked();
-
+    void on_desktopDirButton_clicked();         // 8 slot invoked when button is clicked
     void on_templateDirButton_clicked();
-
     void on_publicshareDirButton_clicked();
-
     void on_documentsDirButton_clicked();
-
     void on_musicDirButton_clicked();
-
     void on_picturesDirButton_clicked();
-
     void on_videosDirButton_clicked();
-
     void on_sourcesDirButton_clicked();
 
-    void on_sourcesNoConfig_stateChanged(int);
+    void on_sourcesNoConfig_stateChanged(int);  // enable or disable Sources pool
 
-    void on_Wizard_accepted();
+    void on_Wizard_accepted();      // save to .conf file each pool's setting and provide initial helpers configuration
 
 private:
-    void fillPage1Fields();
-    void fillPage2Fields();
-    void fillPage3Fields();
-    bool validatePage1();
+    void fillPage1Widget();     // when "next" is clicked, if the page is validate,
+    void fillPage2Widget();     // retrieve values for the current page fields
+    void fillPage3Widget();
+    bool validatePage1();       // when "next" is clicked validate fields letting to leave the current page
     bool validatePage2();
     bool validatePage3();
     Ui::Wizard *ui;
-    enum { WIZARDINTRO = 0
+    enum { WIZARDINTRO = 0      // assigns a name to each page id
          , WIZARDPAGE1 = 1
          , WIZARDPAGE2 = 2
          , WIZARDPAGE3 = 3 };
-    std::ostringstream report;
-    std::forward_list<XDGSearch::poolType> confPools;
+    std::ostringstream report;      // holds summarized choices done page by page
+    std::forward_list<XDGSearch::poolType> confPools;   // once the pool is configured then it's added to this container
 };
 
 #endif // WIZARD_H

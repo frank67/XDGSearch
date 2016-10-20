@@ -27,18 +27,20 @@ Helpers::Helpers(QWidget *parent) :
     granularityEdited(false),
     newItemAdded(nullptr)
 {
-    ui->setupUi(this);
-    buttonOk = ui->buttonBox->button(QDialogButtonBox::Ok);
-    buttonApply = ui->buttonBox->button(QDialogButtonBox::Apply);
+    ui->setupUi(this);  // prepare the UI
+    buttonOk = ui->buttonBox->button(QDialogButtonBox::Ok);     // bind a pointer to buttonbox OK button
+    buttonApply = ui->buttonBox->button(QDialogButtonBox::Apply);   // bind a pointer to buttonbox Apply button
+    // 4 connect to call proper member function (slot) when "clicked" signal is raised
     QObject::connect(ui->buttonBox->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), SLOT(clicked_buttonBoxRestoreDefault()));
     QObject::connect(ui->buttonBox->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), SLOT(clicked_buttonBoxCancel()));
     QObject::connect(buttonOk, SIGNAL(clicked()), SLOT(clicked_buttonBoxOk()));
     QObject::connect(buttonApply, SIGNAL(clicked()), SLOT(clicked_buttonBoxApply()));
-    buttonOk->setEnabled(false);
-    buttonApply->setEnabled(false);
 
-    refreshHelpersList();
+    buttonOk->setEnabled(false);        // show a disabled the button
+    buttonApply->setEnabled(false);     // show a disabled the button
 
+    refreshHelpersList();               // show a list of helper
+    // define a tabbing path order, suitable for editing purpose
     QWidget::setTabOrder(ui->helperName, ui->helperCmdLine);
     QWidget::setTabOrder(ui->helperCmdLine, ui->helperFileExt);
     QWidget::setTabOrder(ui->helperFileExt, ui->helperGranularity);
@@ -50,7 +52,7 @@ Helpers::~Helpers()
     delete ui;
 }
 
-void Helpers::on_addHelper_clicked()
+void Helpers::on_addHelper_clicked()    // prepare the UI to add a provided by the user helper
 {
     if(ui->helpersList->isEnabled())    {
         ui->helpersList->setEnabled(false);
@@ -60,13 +62,14 @@ void Helpers::on_addHelper_clicked()
         granularityEdited = false;
 
         ui->helperName->setText(QString("<new>"));
-        ui->helperName->selectAll();
-        ui->helperName->setFocus();
+        ui->helperName->selectAll();        // the text <new> is shown as selected
+        ui->helperName->setFocus();         // move the focus to helperName so the user can start typing now
+        // erase contents of 3 UI fields, the user shall fill them
         ui->helperCmdLine->clear(); ui->helperFileExt->clear(); ui->helperGranularity->clear();
     }
 }
 
-void Helpers::on_removeHelper_clicked()
+void Helpers::on_removeHelper_clicked()     // irreversibly erase selected helper
 {
     if(  ui->helpersList->currentItem()->isSelected()
       && ui->helpersList->isEnabled() )
@@ -81,15 +84,8 @@ void Helpers::clicked_buttonBoxCancel()
     this->close();
 }
 
-void Helpers::clicked_buttonBoxOk()
+void Helpers::clicked_buttonBoxOk()     // store selected helper name into class member variable then close this dialog
 {
-    /*XDGSearch::helperType htItem;
-    std::get<0>(htItem) = ui->helperName->text().toStdString();
-    std::get<1>(htItem) = ui->helperFileExt->text().toStdString();
-    std::get<2>(htItem) = ui->helperCmdLine->text().toStdString();
-    std::get<3>(htItem) = ui->helperGranularity->value();
-    conf.writeSettings(htItem);
-*/
     if(ui->helpersList->currentItem()->isSelected())
         selectedHelper = ui->helpersList->currentItem()->text();
     else
@@ -98,7 +94,7 @@ void Helpers::clicked_buttonBoxOk()
     this->close();
 }
 
-void Helpers::clicked_buttonBoxApply()
+void Helpers::clicked_buttonBoxApply()  // write helper's changes to .conf file then enable/disable dialog's widget
 {
     XDGSearch::helperType htItem;
     std::get<0>(htItem) = ui->helperName->text().toStdString();
@@ -112,13 +108,13 @@ void Helpers::clicked_buttonBoxApply()
     buttonApply->setEnabled(false);
 }
 
-void Helpers::clicked_buttonBoxRestoreDefault()
+void Helpers::clicked_buttonBoxRestoreDefault() // restore initial helpers default setting
 {
     conf.defaultSettings("");
     refreshHelpersList();
 }
 
-void Helpers::on_helperName_editingFinished()
+void Helpers::on_helperName_editingFinished()   // once assigned an helper name puts it into the helpersList widget
 {
     if(isNameAdding)    {
         isNameAdding = false;
@@ -129,28 +125,30 @@ void Helpers::on_helperName_editingFinished()
     }
     if(ui->helpersList->currentItem())
         ui->helpersList->currentItem()->setText(ui->helperName->text());
-    commitHelperChanges();
+    toggleWidgetOnEditing();
 }
 
 void Helpers::on_helperCmdLine_editingFinished()
 {
-    commitHelperChanges();
+    toggleWidgetOnEditing();
 }
 
 void Helpers::on_helperFileExt_editingFinished()
 {
-    commitHelperChanges();
+    toggleWidgetOnEditing();
 }
 
 void Helpers::on_helperGranularity_editingFinished()
 {
     granularityEdited = true;
-    commitHelperChanges();
+    toggleWidgetOnEditing();
 }
 
 void Helpers::on_helpersList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
-{
+{   // when current item changed retrieves helper's item values and assign them to the ui widgets
+    Q_UNUSED(previous)
     XDGSearch::helperType htItem;
+
     if(current)
         htItem  = conf.enqueryHelper(current->text().toStdString());
 
@@ -162,18 +160,9 @@ void Helpers::on_helpersList_currentItemChanged(QListWidgetItem *current, QListW
     ui->helperCmdLine->setText(QString::fromStdString(std::get<2>(htItem)));
     ui->helperGranularity->setValue(std::get<3>(htItem));
     buttonOk->setEnabled(true);
-
-    if(previous)    {/*
-        std::get<0>(htItem) = ui->helperName->text().toStdString();
-        std::get<1>(htItem) = ui->helperFileExt->text().toStdString();
-        std::get<2>(htItem) = ui->helperCmdLine->text().toStdString();
-        std::get<3>(htItem) = ui->helperGranularity->value();
-
-        conf.writeSettings(htItem);*/
-    }
 }
 
-void Helpers::commitHelperChanges()
+void Helpers::toggleWidgetOnEditing()   // when a field is edited accordingly sets buttons and list
 {
     if(  !ui->helperName->text().isEmpty()
       && !ui->helperCmdLine->text().isEmpty()
@@ -181,22 +170,17 @@ void Helpers::commitHelperChanges()
       && granularityEdited )
     {
         buttonApply->setEnabled(true);
-
-        /*XDGSearch::helperType ht;
-        std::get<0>(ht) = ui->helperName->text().toStdString();
-        std::get<1>(ht) = ui->helperFileExt->text().toStdString();
-        std::get<2>(ht) = ui->helperCmdLine->text().toStdString();
-        std::get<3>(ht) = ui->helperGranularity->value();
-
-        conf.writeSettings(ht);*/
-    } else  {
+    }
+    else
+    {
+        buttonOk->setEnabled(false);
         buttonApply->setEnabled(false);
         granularityEdited = false;
     }
     ui->helpersList->setEnabled(false);
 }
 
-void Helpers::refreshHelpersList()
+void Helpers::refreshHelpersList()  // retrieves helper's names from the .conf file then they'll be added to the helperList widget
 {
     const QStringList helpersNameList = conf.getHelpersNameList();
 

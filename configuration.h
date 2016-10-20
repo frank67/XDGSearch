@@ -25,8 +25,8 @@
 #include <tuple>
 #include <QSettings>
 
-namespace XDGSearch {
-enum class Pool {   DESKTOP
+namespace XDGSearch {               // open the application namespace
+enum class Pool {   DESKTOP         // define an enum class to hold the XDG keys that give name to the directories
                   , TEMPLATES
                   , PUBLICSHARE
                   , DOCUMENTS
@@ -35,7 +35,7 @@ enum class Pool {   DESKTOP
                   , VIDEOS
                   , SOURCES
                   , END };
-Pool& operator++(Pool&);
+Pool& operator++(Pool&);                // declare ++ operator overloaded to provide pre-increment for the Pool type
 
 using poolType = std::tuple<  std::string       //  0 PoolName
                             , std::string       //  1 localPoolName
@@ -48,10 +48,10 @@ using helperType = std::tuple<std::string       //  0 helper name
                             , std::string       //  1 extensions
                             , std::string       //  2 command line
                             , unsigned int>;    //  3 granularity
-std::string toXDGKey(const Pool&);
-class Configuration;
-class ConfigurationBase;
-class cfgDesktop;
+std::string toXDGKey(const Pool&);              // translate from Pool type item to string name key
+class Configuration;                    // Interface class for configuration/settings  operation
+class ConfigurationBase;                // "Cheshire Cat" implemention class for Configuration class
+class cfgDesktop;                       // Specialized classes that inherit from ConfigurationBase to define its pure virtual funcion
 class cfgTemplates;
 class cfgPublicShare;
 class cfgDocuments;
@@ -59,7 +59,7 @@ class cfgMusic;
 class cfgPictures;
 class cfgVideos;
 class cfgSources;
-class Settings;
+class Settings;                         // Class used from Configuration when it has to deal with settings operations
 }
 
 Q_DECLARE_METATYPE(XDGSearch::Pool)     // macro used from QVariant in MainWindow::populateCBox()
@@ -70,22 +70,22 @@ public:
     virtual ~ConfigurationBase() = default;
     virtual void defaultSettings(const std::string&) = 0;
 protected:
-    const std::pair<std::string, std::string> getXDGKeysDirPath(const std::string&);
-    void addHelperToPool(const std::string&);
-    bool isFirstRun();
-    bool isPopulatedDB(const Pool&);
-    void initSettings();
-    void writeSettings(const helperType&);
-    void writeSettings(const poolType&);
-    const helperType enqueryHelper(const std::string&);
-    const poolType   enqueryPool();
-    void removeHelper(const std::string&);
-    bool askForConfirmation();
-    void setAskForConfirmation(bool);
-    QStringList getHelpersNameList();
-    void saveMainWindowGeometry(const QByteArray&);
-    const QByteArray readMainWindowGeometry();
-    helperType helpers;
+    const std::pair<std::string, std::string> getXDGKeysDirPath(const std::string&);    // retrive the XDG directory path by quering a key in the home directory XDG configuration file
+    void addHelperToPool(const std::string&);               // add specified helper to private pools tuple object defined in this class
+    bool isFirstRun();                                      // check if "askQuitConfirmation" entry exist in the .conf file
+    bool isPopulatedDB(const Pool&);                        // check if the object build from the specified pool has an already existing database
+    void initSettings();                                    // restore default settings
+    void writeSettings(const helperType&);                  // write to .conf file contents of the tuple object
+    void writeSettings(const poolType&);                    // write to .conf file contents of the tuple object
+    const helperType enqueryHelper(const std::string&);     // return a tuple reading data from the .conf file
+    const poolType   enqueryPool();                         // return a tuple reading data from the .conf file
+    void removeHelper(const std::string&);                  // remove all entries for the specified helper name in .conf file
+    bool askForConfirmation();                              // query .conf file "askQuitConfirmation" entry
+    void setAskForConfirmation(bool);                       // set "askQuitConfirmation" .conf file entry
+    QStringList getHelpersNameList();                       // query .conf file for the helpers list
+    void saveMainWindowGeometry(const QByteArray&);         // set geometry and window position in .conf file
+    const QByteArray readMainWindowGeometry();              // query geometry and window position in .conf file
+
     poolType pools;
     QSettings settings;
 };
@@ -94,7 +94,7 @@ class XDGSearch::Configuration final {
 public:
     Configuration();
     Configuration(const Pool&);
-    //const helperType getHelpers() const         { return d ->helpers; }
+
     const poolType getPools() const             { return d ->pools; }
     void defaultSettings(const std::string& s) const    { d ->defaultSettings(s); }
     void addHelperToPool(const std::string& h) const    { d ->addHelperToPool(h); }
@@ -113,7 +113,6 @@ public:
     const QByteArray readMainWindowGeometry() const     { return d ->readMainWindowGeometry(); }
 private:
     std::unique_ptr<ConfigurationBase> d;
-
 };
 
 class XDGSearch::cfgDesktop final : public ConfigurationBase {

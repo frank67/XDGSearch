@@ -26,8 +26,6 @@
 #include <QCheckBox>
 #include <QDesktopServices>
 #include <QDialog>
-//#include <QtConcurrent/QtConcurrent>
-//#include <QFuture>
 #include <thread>
 #include <memory>
 #include <forward_list>
@@ -42,15 +40,16 @@ MainWindow::MainWindow(QWidget *parent) :
     , conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration))
 {
 
-    ui->setupUi(this);
-    ui->menuButton->addAction(ui->actionRebuild_current_Pool);
+    ui->setupUi(this);  // prepares the UI
+    ui->menuButton->addAction(ui->actionRebuild_current_Pool);  // 5 slot for menuButton widget
     ui->menuButton->addAction(ui->actionRebuild_All);
-    ui->menuButton->addAction(ui->actionHistory);
+    //ui->menuButton->addAction(ui->actionHistory);
     ui->menuButton->addAction(ui->actionPreferences);
+    ui->menuButton->addAction(ui->actionAbout);
     ui->menuButton->addAction(ui->action_Quit);
 
-    readSettings();
-    populateCBox();
+    readMainWindowSizeAndPosition();
+    populateCBox();     // populates poolCBox widget with local pool name
 
 }
 
@@ -59,7 +58,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::readSettings()
+void MainWindow::readMainWindowSizeAndPosition()
 {
     const QByteArray geometry = conf ->readMainWindowGeometry();
     if (geometry.isEmpty()) {
@@ -68,12 +67,12 @@ void MainWindow::readSettings()
         move((availableGeometry.width() - width()) / 2,
              (availableGeometry.height() - height()) / 2);
     } else {
-        restoreGeometry(geometry);
+        QWidget::restoreGeometry(geometry);
     }
 }
 
 void MainWindow::populateCBox()
-{
+{   // iteration that retrieves each local pool name and adds it to poolCBox
     for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
         XDGSearch::Configuration conf(p);
         auto pt = conf.enqueryPool();
@@ -84,25 +83,26 @@ void MainWindow::populateCBox()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (maybeQuit()) {
-        conf ->saveMainWindowGeometry(saveGeometry());
+    if (maybeQuit()) {  // if not disabled by the user opens a dialog to ask close window confirmation
+        conf ->saveMainWindowGeometry(QWidget::saveGeometry());
         event->accept();
-    } else {
+    } else
         event->ignore();
-    }
 }
 
 bool MainWindow::maybeQuit()
 {
     if(conf ->askForConfirmation())
-        return true;
+        return true;    // the user has disabled the close window dialog (the checkBox was clicked)
 
     bool retval = false;
+    // a dialog will be shown to ask for confirmation to close window
     QMessageBox* mb = new QMessageBox(  QMessageBox::Question
                                       , QCoreApplication::applicationName()
                                       , QObject::trUtf8("Do you really want to quit?")
                                       , QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No
                                       , this);
+    // provide a checkBox into the dialog window, if clicked the dialog window won't be shown
     QCheckBox* cb = new QCheckBox(QObject::trUtf8("Don't ask me again"), mb);
     mb ->setCheckBox(cb);
 
@@ -118,7 +118,7 @@ bool MainWindow::maybeQuit()
 }
 
 bool MainWindow::maybeBuildDB()
-{
+{   // dialog window to ask confirmation for build a database
     bool retval = false;
     QMessageBox* mb = new QMessageBox(  QMessageBox::Question
                                       , QCoreApplication::applicationName()
@@ -141,28 +141,26 @@ void MainWindow::on_actionHistory_triggered()
 }
 
 void MainWindow::on_actionRebuild_current_Pool_triggered()
-{
+{   // rebuild and overwrite the database pointed by poolCBox combobox
     const QString statusBarMessage = QString(QObject::trUtf8(" Indexing: "))
                                    + ui ->poolCBox->currentText()
                                    + QString(QObject::trUtf8(" pool ..."));
 
-    ui ->statusBar->showMessage(statusBarMessage);
-    XDGSearch::indexer idx(ui ->poolCBox->currentData().value<XDGSearch::Pool>());
-    idx.populateDB();
-    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);
+    ui ->statusBar->showMessage(statusBarMessage);  // informs the user by displaying a message in the status bar
+    XDGSearch::Indexer idx(ui ->poolCBox->currentData().value<XDGSearch::Pool>());  // build indexer by passing the pool value pointed from poolCBox
+    idx.populateDB();   // rebuild and overwrite the database
+    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  // displays " Done!" timed out by 2 sec
 }
 
 void MainWindow::on_actionRebuild_All_triggered()
-{
+{   // rebuild and overwrite all the databases
     const QString statusBarMessage = QString(QObject::trUtf8(" Indexing all pool in progress ..."));
     std::forward_list<std::unique_ptr<std::thread>> idxThread;
 
 
-    for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
-        idxThread.push_front(std::unique_ptr<std::thread>(new std::thread(  XDGSearch::rebuildAllDB, p)));
+    for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)
+        idxThread.push_front(std::unique_ptr<std::thread>(new std::thread(XDGSearch::rebuildDB, p)));
 
-        //QFuture<void> future = QtConcurrent::run(MainWindow::rebuildAllDB, p);
-    }
     ui->statusBar->showMessage(statusBarMessage);
 
     for(auto& t : idxThread)
@@ -171,44 +169,61 @@ void MainWindow::on_actionRebuild_All_triggered()
     ui->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);
 }
 
-void XDGSearch::rebuildAllDB(const XDGSearch::Pool& p)
+void XDGSearch::rebuildDB(const XDGSearch::Pool& p)
 {
-    XDGSearch::indexer idx(p);
+    XDGSearch::Indexer idx(p);
 
     idx.populateDB();
 }
 
 void MainWindow::on_actionPreferences_triggered()
-{
-
-    QDialog* q = new Preferences(this);
-    q->exec();
-    delete q;
+{   // displays preference dialog
+    QDialog* d = new Preferences(this);
+    d->exec();
+    delete d;
 }
 
 void MainWindow::on_resultPane_anchorClicked(const QUrl& u)
-{
+{   // starts the application associated to the file extension
     QDesktopServices::openUrl(u);
 }
 
 void MainWindow::on_sought_returnPressed()
-{
+{   // performs the query of the sought terms and it will display the database's documents that match the search
     const XDGSearch::Pool p = ui ->poolCBox->currentData().value<XDGSearch::Pool>();
     const QString statusBarMessage = QString(QObject::trUtf8(" Indexing: "))
                                    + ui ->poolCBox->currentText()
                                    + QString(QObject::trUtf8(" pool ..."));
-    const std::string s = ui ->sought->text().toStdString();
-    XDGSearch::indexer idx(p);
+    const std::string soughtTerms = ui ->sought->text().toStdString();
+    XDGSearch::Indexer idx(p);
 
     if(conf ->isPopulatedDB(p))
-        idx.seek(s);
+        idx.seek(soughtTerms);
     else    {
-        if(maybeBuildDB())  {
+        if(maybeBuildDB())  {   // asks the user whether wanna build the database
             ui ->statusBar->showMessage(statusBarMessage);
             idx.populateDB();
             ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);
-            idx.seek(s);
+            idx.seek(soughtTerms);
+        } else  {       // informs the user that rebuild database is necessary
+            ui ->statusBar->showMessage(QString(QObject::trUtf8(" Rebuilding database is necessary")), 2000);
+            return;
         }
     }
-    ui ->resultPane->setHtml(QString::fromStdString(idx.getResult()));
+    ui ->resultPane->setHtml(QString::fromStdString(idx.getResult()));  // show results into resultPane widget
+}
+
+void MainWindow::on_actionAbout_triggered()
+{   // displays "about" application window
+    const QString title = QString("XDGSearch ")
+                        + QCoreApplication::applicationVersion();
+    const QString body  = QString("<html><head/><body><p><span style=\" font-size:11pt; font-weight:600;\">")
+                        + title
+                        + "</span></p><p>Based on QT "
+                        + QT_VERSION_STR
+                        + "</p><p>Copyright 2016 Franco Martelli All rights reserved.</p>"
+                        + "<p>The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE."
+                        + "</p></body></html>";
+
+    QMessageBox::about(this, title, body);
 }

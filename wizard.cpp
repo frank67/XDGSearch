@@ -25,7 +25,7 @@ Wizard::Wizard(QWidget *parent) :
     QWizard(parent),
     ui(new Ui::Wizard)
 {
-    ui->setupUi(this);
+    ui->setupUi(this);  // prepares the UI
 }
 
 Wizard::~Wizard()
@@ -34,7 +34,7 @@ Wizard::~Wizard()
 }
 
 bool Wizard::validateCurrentPage()
-{
+{   // overrided inherited member in order to validate each current page
     switch (this ->currentId()) {
     case WIZARDPAGE1 :
         return validatePage1();
@@ -48,7 +48,7 @@ bool Wizard::validateCurrentPage()
 }
 
 bool Wizard::validatePage1()
-{
+{   // fails if a directory pool name has no value
     if(  ui ->desktopDir->text().isEmpty()
       || ui ->templateDir->text().isEmpty()
       || ui ->publicshareDir->text().isEmpty()
@@ -61,9 +61,9 @@ bool Wizard::validatePage1()
 }
 
 bool Wizard::validatePage2()
-{
+{   // fails if Source directory pool name has no value
     if(!  ui ->sourcesNoConfig->isChecked()
-       && ui ->sourcesDir->text().isEmpty())
+       && ui ->sourcesDir->text().isEmpty() )
         return false;
     return true;
 }
@@ -75,18 +75,18 @@ bool Wizard::validatePage3()
 
 
 void Wizard::initializePage(int id)
-{
+{   // overrided inherited member in order to fill fields of each current page
     switch (id) {
     case WIZARDINTRO :
         break;
     case WIZARDPAGE1 :
-        fillPage1Fields();
+        fillPage1Widget();
         break;
     case WIZARDPAGE2 :
-        fillPage2Fields();
+        fillPage2Widget();
         break;
     case WIZARDPAGE3 :
-        fillPage3Fields();
+        fillPage3Widget();
         break;
     default:
         break;
@@ -94,7 +94,7 @@ void Wizard::initializePage(int id)
 }
 
 void Wizard::on_desktopDirButton_clicked()
-{
+{   // ask the user to provide a directory name for the DESKTOP pool
     const QString directory = QFileDialog::getExistingDirectory(this
                               , QObject::trUtf8("Select directory")
                               , QDir::homePath()
@@ -103,7 +103,7 @@ void Wizard::on_desktopDirButton_clicked()
 }
 
 void Wizard::on_templateDirButton_clicked()
-{
+{   // ask the user to provide a directory name for the TEMPLATE pool
     const QString directory = QFileDialog::getExistingDirectory(this
                               , QObject::trUtf8("Select directory")
                               , QDir::homePath()
@@ -112,7 +112,7 @@ void Wizard::on_templateDirButton_clicked()
 }
 
 void Wizard::on_publicshareDirButton_clicked()
-{
+{   // ask the user to provide a directory name for the PUBLICSHARE pool
     const QString directory = QFileDialog::getExistingDirectory(this
                               , QObject::trUtf8("Select directory")
                               , QDir::homePath()
@@ -121,7 +121,7 @@ void Wizard::on_publicshareDirButton_clicked()
 }
 
 void Wizard::on_documentsDirButton_clicked()
-{
+{   // ask the user to provide a directory name for the DOCUMENTS pool
     const QString directory = QFileDialog::getExistingDirectory(this
                               , QObject::trUtf8("Select directory")
                               , QDir::homePath()
@@ -130,7 +130,7 @@ void Wizard::on_documentsDirButton_clicked()
 }
 
 void Wizard::on_musicDirButton_clicked()
-{
+{   // ask the user to provide a directory name for the MUSIC pool
     const QString directory = QFileDialog::getExistingDirectory(this
                               , QObject::trUtf8("Select directory")
                               , QDir::homePath()
@@ -139,7 +139,7 @@ void Wizard::on_musicDirButton_clicked()
 }
 
 void Wizard::on_picturesDirButton_clicked()
-{
+{   // ask the user to provide a directory name for the PICTURES pool
     const QString directory = QFileDialog::getExistingDirectory(this
                               , QObject::trUtf8("Select directory")
                               , QDir::homePath()
@@ -148,7 +148,7 @@ void Wizard::on_picturesDirButton_clicked()
 }
 
 void Wizard::on_videosDirButton_clicked()
-{
+{   // ask the user to provide a directory name for the VIDEOS pool
     const QString directory = QFileDialog::getExistingDirectory(this
                               , QObject::trUtf8("Select directory")
                               , QDir::homePath()
@@ -157,7 +157,7 @@ void Wizard::on_videosDirButton_clicked()
 }
 
 void Wizard::on_sourcesDirButton_clicked()
-{
+{   // ask the user to provide a directory name for the SOURCES pool
     const QString directory = QFileDialog::getExistingDirectory(this
                               , QObject::trUtf8("Select directory")
                               , QDir::homePath()
@@ -165,10 +165,10 @@ void Wizard::on_sourcesDirButton_clicked()
     ui ->sourcesDir->setText(directory);
 }
 
-void Wizard::fillPage1Fields()
+void Wizard::fillPage1Widget()
 {
-    confPools.clear();
-
+    confPools.clear();  // clears container that holds configurations of all pools
+    // iteration to retrieve directory name and store the pool configuration into confPool container
     for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
         XDGSearch::Configuration conf(p);
         switch (p) {
@@ -220,25 +220,25 @@ void Wizard::fillPage1Fields()
     }
 }
 
-void Wizard::fillPage2Fields()
+void Wizard::fillPage2Widget()
 {
-    // empty
+    return;
 }
 
-void Wizard::fillPage3Fields()
-{
+void Wizard::fillPage3Widget()
+{   // prepares a summary report of the configurations made to display before to accept the Wizard
     std::ostringstream().swap(report);
-    confPools.remove_if( [] (const XDGSearch::poolType& p)
+    confPools.remove_if( [] (const XDGSearch::poolType& p)  // removes Sources pool from the container
                             { return std::get<0>(p) == "XDG_SOURCES_DIR"; });
 
-    report  <<  "\nSummary:\n\n"
+    report  <<  "\nSummary:\n\n"            // summary report header
             <<  "<Pool name>\t\t<Directory>\n";
 
     for(const auto& p : confPools)
-        report  << " " << std::get<1>(p) << ":\t\t\""
-                <<  std::get<3>(p)   << "\"\n";
+        report  << " "  << std::get<1>(p)   << ":\t\t\""    // localized pool name
+                        << std::get<3>(p)   << "\"\n";      // pool's directory name
 
-    if(!ui ->sourcesNoConfig->isChecked())  {
+    if( !ui ->sourcesNoConfig->isChecked() )    {
         report  <<  " Sources"    << ":\t\t\""
                 <<  ui ->sourcesDir->text().toStdString()   << "\"";
         confPools.push_front(std::make_tuple( "XDG_SOURCES_DIR"
@@ -246,18 +246,18 @@ void Wizard::fillPage3Fields()
                                             , "text"
                                             , ui ->sourcesDir->text().toStdString()
                                             , "none"
-                                            , "" ));
+                                            , "none" ));
     } else  {
         report  <<  " Sources"    << ":\t\t- "
                 <<  "disabled"   << " -";
-        confPools.push_front(std::make_tuple("XDG_SOURCES_DIR", "", "", "", "none", ""));
+        confPools.push_front(std::make_tuple("XDG_SOURCES_DIR", "", "", "", "none", "none"));
     }
 
-    ui ->summaryLabel->setText(QString::fromStdString(report.str()));
+    ui ->summaryLabel->setText(QString::fromStdString(report.str()));   // displays the resulting report
 }
 
 void Wizard::on_sourcesNoConfig_stateChanged(int s)
-{
+{   // on toggling of sourcesNoConfig accordingly sets the widgets
     switch (s) {
     case Qt::Unchecked :
         ui ->sourcesDirButton->setDisabled(false);
@@ -275,11 +275,11 @@ void Wizard::on_sourcesNoConfig_stateChanged(int s)
 }
 
 void Wizard::on_Wizard_accepted()
-{
-    XDGSearch::Configuration conf;
+{   // once accepted write configurations stored in confPool into the .conf file
+    XDGSearch::Configuration conf;  // no pool provided to the constructor, Settings derivated class is used
     for(const auto& p : confPools)
         conf.writeSettings(p);
 
-    conf.initSettings();
+    conf.initSettings();    // after that pool settings are been written now it writes initial helpers settings
 
 }

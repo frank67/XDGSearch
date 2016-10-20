@@ -26,61 +26,57 @@
 #include "configuration.h"
 
 namespace XDGSearch {
-class indexer_base;
-class indexer;
-void forEachHelper(const XDGSearch::helperType&, const XDGSearch::poolType&, Xapian::WritableDatabase*);
+class IndexerBase;          // "Cheshire Cat" implemention class for Indexer class
+class Indexer;              // Interface class for indexing/quering  operation
+void forEachHelper( const XDGSearch::helperType&
+                  , const XDGSearch::poolType&
+                  , Xapian::WritableDatabase* );    // threaded function to populate each pool's database
 }
 
-class XDGSearch::indexer_base final {
-friend class indexer;
-    class queryResult;
-    explicit indexer_base(const Pool&);
-    void populateDB() const;
-    void seek(const std::string&);
-    const Xapian::MSet enqueryDB(const std::string&) const;
+class XDGSearch::IndexerBase final {
+friend class Indexer;
+    class queryResult;      // nested class to provide answer for sought terms
+    explicit IndexerBase(const Pool&);
+    void populateDB() const;    // build database for the current pool
+    void seek(const std::string&);  // build a queryresult object and write result to htmlResult string
+    const Xapian::MSet enqueryDB(const std::string&) const; // find a string in the current pool's database
     std::unique_ptr<XDGSearch::Configuration> conf;
     XDGSearch::poolType currentPoolSettings;
-    std::string   xdgKey
-                , htmlResult;
+    std::string xdgKey, htmlResult;
 };
 
-class XDGSearch::indexer_base::queryResult final   {
+class XDGSearch::IndexerBase::queryResult final   {
 public:
-    queryResult(const std::string&, const Xapian::MSet&);
-    std::string getResult() const   { return htmlResult; }
+    queryResult(const std::string&, const Xapian::MSet&);   // ctor that handle the query answers
+    std::string getResult() const   { return htmlResult; }  // return an html formatted text suitable to an html viewer widget
 private:
-    std::string composeResult(const Xapian::MSet&);
-    std::string   htmlResult
-                , soughtTerms;
+    std::string composeResult(const Xapian::MSet&);     // translate the query answer to an html formatted string
+    std::string  htmlResult, soughtTerms;
 };
 
-class XDGSearch::indexer final
-{
+class XDGSearch::Indexer final  {
 public:
-    indexer(const XDGSearch::Pool&);
+    Indexer(const XDGSearch::Pool&);
     void populateDB() const         { return d ->populateDB(); }
-    void seek(const std::string& s) { return d ->seek(s); }
+    void seek(const std::string& s) { d ->seek(s); }
     std::string getResult() const   { return d ->htmlResult; }
 private:
-    std::unique_ptr<XDGSearch::indexer_base> d;
+    std::unique_ptr<XDGSearch::IndexerBase> d;
 };
 
 inline
-XDGSearch::indexer_base::queryResult::queryResult(const std::string& s, const Xapian::MSet& m) : soughtTerms(s)   {
-    htmlResult = composeResult(m);
-}
-inline
-XDGSearch::indexer::indexer(const XDGSearch::Pool& p = XDGSearch::Pool::END) :
-    d(std::unique_ptr<XDGSearch::indexer_base>(new indexer_base(p)))
-{
+XDGSearch::IndexerBase::queryResult::queryResult(const std::string& s, const Xapian::MSet& m) :
+    soughtTerms(s)  { htmlResult = composeResult(m); }
 
-}
 inline
-void XDGSearch::indexer_base::seek(const std::string& s)
+XDGSearch::Indexer::Indexer(const XDGSearch::Pool& p = XDGSearch::Pool::END) :
+    d(std::unique_ptr<XDGSearch::IndexerBase>(new IndexerBase(p)))      { }
+
+inline
+void XDGSearch::IndexerBase::seek(const std::string& s)
 {
-    XDGSearch::indexer_base::queryResult qr(s, enqueryDB(s));
+    XDGSearch::IndexerBase::queryResult qr(s, enqueryDB(s));
     htmlResult = qr.getResult();
 }
-
 
 #endif // INDEXER_H

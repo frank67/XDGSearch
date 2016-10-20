@@ -30,8 +30,8 @@ namespace Ui {
 }
 
 namespace XDGSearch {
-    class Configuration;
-    void rebuildAllDB(const XDGSearch::Pool&);
+    class Configuration;    // declaration for further use in the MainWindow class
+    void rebuildDB(const XDGSearch::Pool&);  // threaded function to build pool's databases
 }
 
 class MainWindow final : public QMainWindow
@@ -42,26 +42,25 @@ public:
     explicit MainWindow(QWidget* parent = 0);
     ~MainWindow();
 private slots:
-    void on_actionHistory_triggered();
-
+    void on_actionHistory_triggered();      // 4 slot invoked by each popup menu item
     void on_actionRebuild_current_Pool_triggered();
-
     void on_actionRebuild_All_triggered();
-
     void on_actionPreferences_triggered();
 
-    void on_resultPane_anchorClicked(const QUrl&);
+    void on_resultPane_anchorClicked(const QUrl&);      // run proper application for each url type
 
-    void on_sought_returnPressed();
+    void on_sought_returnPressed();     // query database and shows result
+
+    void on_actionAbout_triggered();
 
 private:
     Ui::MainWindow* const ui;
     std::unique_ptr<XDGSearch::Configuration> conf;
-    void readSettings();
-    void populateCBox();
-    bool maybeQuit();
-    bool maybeBuildDB();
-    void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE;
+    void readMainWindowSizeAndPosition();        // set the MainWindow position and geometry reading the .conf file
+    void populateCBox();        // set the combobox adding local pools name
+    bool maybeQuit();           // ask confirmation for quitting
+    bool maybeBuildDB();        // ask confirmation for build pool's database (if it doesn't exist)
+    void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE;    // close MainWindow
 };
 
 #endif // MAINWINDOW_H

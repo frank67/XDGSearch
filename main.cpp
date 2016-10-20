@@ -18,28 +18,29 @@
 
 #include "mainwindow.h"
 #include <QApplication>
-#include <QLibraryInfo>
 #include "wizard.h"
 #include "configuration.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
+    QApplication::setEffectEnabled(Qt::UI_AnimateMenu);
+    QApplication::setEffectEnabled(Qt::UI_AnimateCombo);
     QCoreApplication::setOrganizationName("XDGSearch");
     QCoreApplication::setApplicationName("xdgsearch");
-    QCoreApplication::setApplicationVersion(QT_VERSION_STR);
-    XDGSearch::Configuration conf;
+    QCoreApplication::setApplicationVersion(APP_VERSION);   // the version number is stored into xdgsearch.pro file
 
-    if(conf.isFirstRun())   {
+    XDGSearch::Configuration conf;
+    bool b = conf.isFirstRun();
+
+    if(b)   {
         Wizard wiz;
-        if(wiz.exec() == QDialog::Accepted) {
+        if(wiz.exec() == QDialog::Accepted) {   // opens wizard dialog and if accepted opens xdgsearch's mainwindow
             MainWindow w0;
             w0.show();
             return a.exec();
         }
-    }
-    else    {
+    } else  {
         MainWindow w1;
         w1.show();
         return a.exec();

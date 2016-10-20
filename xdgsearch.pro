@@ -37,6 +37,12 @@ LIBS     += -lQt5Core \
 
 INCLUDEPATH += /usr/include/xapian-1.3
 
+# The application version
+VERSION = 0.10.0
+
+# Defines the preprocessor macro to get the application version available in the application code
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
 SOURCES += main.cpp\
     mainwindow.cpp \
     configuration.cpp \
