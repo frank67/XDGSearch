@@ -20,7 +20,6 @@
 #include <fstream>
 #include <cstdio>
 #include <algorithm>
-#include <iostream>
 #include <QDir>
 #include <QStringList>
 #include <QSettings>
