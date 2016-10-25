@@ -70,6 +70,7 @@ private:
     bool validatePage1();       // when "next" is clicked validate fields letting to leave the current page
     bool validatePage2();
     bool validatePage3();
+    const QString chooseDirectoryDialog();
     Ui::Wizard *ui;
     enum { WIZARDINTRO = 0      // assigns a name to each page id
          , WIZARDPAGE1 = 1

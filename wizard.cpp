@@ -57,6 +57,47 @@ bool Wizard::validatePage1()
       || ui ->picturesDir->text().isEmpty()
       || ui ->videosDir->text().isEmpty() )
         return false;
+
+    if( !confPools.empty() )
+        return true;
+
+    for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
+        const XDGSearch::Configuration conf(p);
+        auto currentPool = conf.getPools();
+        switch (p) {
+        case XDGSearch::Pool::DESKTOP :
+            std::get<3>(currentPool) = ui ->desktopDir ->text().toStdString();
+            confPools.push_front(currentPool);
+            break;
+        case XDGSearch::Pool::TEMPLATES :
+            std::get<3>(currentPool) = ui ->templateDir ->text().toStdString();
+            confPools.push_front(currentPool);
+            break;
+        case XDGSearch::Pool::PUBLICSHARE :
+            std::get<3>(currentPool) = ui ->publicshareDir ->text().toStdString();
+            confPools.push_front(currentPool);
+            break;
+        case XDGSearch::Pool::DOCUMENTS :
+            std::get<3>(currentPool) = ui ->documentsDir ->text().toStdString();
+            confPools.push_front(currentPool);
+            break;
+        case XDGSearch::Pool::MUSIC :
+            std::get<3>(currentPool) = ui ->musicDir ->text().toStdString();
+            confPools.push_front(currentPool);
+            break;
+        case XDGSearch::Pool::PICTURES :
+            std::get<3>(currentPool) = ui ->picturesDir ->text().toStdString();
+            confPools.push_front(currentPool);
+            break;
+        case XDGSearch::Pool::VIDEOS :
+            std::get<3>(currentPool) = ui ->videosDir ->text().toStdString();
+            confPools.push_front(currentPool);
+            break;
+        default:
+            break;
+        }
+    }
+
     return true;
 }
 
@@ -93,125 +134,110 @@ void Wizard::initializePage(int id)
     }
 }
 
+const QString Wizard::chooseDirectoryDialog()
+{   // ask the user to provide a directory name for the pool
+    const QString retval = QFileDialog::getExistingDirectory( this
+                                                            , QObject::trUtf8("Select directory")
+                                                            , QDir::homePath()
+                                                            , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    return retval;
+}
+
 void Wizard::on_desktopDirButton_clicked()
-{   // ask the user to provide a directory name for the DESKTOP pool
-    const QString directory = QFileDialog::getExistingDirectory(this
-                              , QObject::trUtf8("Select directory")
-                              , QDir::homePath()
-                              , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    ui ->desktopDir->setText(directory);
+{
+    confPools.clear();          // empties container will be populated to the validation-page time
+    ui ->desktopDir->setText(chooseDirectoryDialog());  // sets the chosen directory to the widget's field text
 }
 
 void Wizard::on_templateDirButton_clicked()
-{   // ask the user to provide a directory name for the TEMPLATE pool
-    const QString directory = QFileDialog::getExistingDirectory(this
-                              , QObject::trUtf8("Select directory")
-                              , QDir::homePath()
-                              , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    ui ->templateDir->setText(directory);
+{
+    confPools.clear();
+    ui ->templateDir->setText(chooseDirectoryDialog());
 }
 
 void Wizard::on_publicshareDirButton_clicked()
-{   // ask the user to provide a directory name for the PUBLICSHARE pool
-    const QString directory = QFileDialog::getExistingDirectory(this
-                              , QObject::trUtf8("Select directory")
-                              , QDir::homePath()
-                              , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    ui ->publicshareDir->setText(directory);
+{
+    confPools.clear();
+    ui ->publicshareDir->setText(chooseDirectoryDialog());
 }
 
 void Wizard::on_documentsDirButton_clicked()
-{   // ask the user to provide a directory name for the DOCUMENTS pool
-    const QString directory = QFileDialog::getExistingDirectory(this
-                              , QObject::trUtf8("Select directory")
-                              , QDir::homePath()
-                              , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    ui ->documentsDir->setText(directory);
+{
+    confPools.clear();
+    ui ->documentsDir->setText(chooseDirectoryDialog());
 }
 
 void Wizard::on_musicDirButton_clicked()
-{   // ask the user to provide a directory name for the MUSIC pool
-    const QString directory = QFileDialog::getExistingDirectory(this
-                              , QObject::trUtf8("Select directory")
-                              , QDir::homePath()
-                              , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    ui ->musicDir->setText(directory);
+{
+    confPools.clear();
+    ui ->musicDir->setText(chooseDirectoryDialog());
 }
 
 void Wizard::on_picturesDirButton_clicked()
-{   // ask the user to provide a directory name for the PICTURES pool
-    const QString directory = QFileDialog::getExistingDirectory(this
-                              , QObject::trUtf8("Select directory")
-                              , QDir::homePath()
-                              , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    ui ->picturesDir->setText(directory);
+{
+    confPools.clear();
+    ui ->picturesDir->setText(chooseDirectoryDialog());
 }
 
 void Wizard::on_videosDirButton_clicked()
-{   // ask the user to provide a directory name for the VIDEOS pool
-    const QString directory = QFileDialog::getExistingDirectory(this
-                              , QObject::trUtf8("Select directory")
-                              , QDir::homePath()
-                              , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    ui ->videosDir->setText(directory);
+{
+    confPools.clear();
+    ui ->videosDir->setText(chooseDirectoryDialog());
 }
 
 void Wizard::on_sourcesDirButton_clicked()
-{   // ask the user to provide a directory name for the SOURCES pool
-    const QString directory = QFileDialog::getExistingDirectory(this
-                              , QObject::trUtf8("Select directory")
-                              , QDir::homePath()
-                              , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    ui ->sourcesDir->setText(directory);
+{
+    ui ->sourcesDir->setText(chooseDirectoryDialog());
 }
 
 void Wizard::fillPage1Widget()
 {
     confPools.clear();  // clears container that holds configurations of all pools
-    // iteration to retrieve directory name and store the pool configuration into confPool container
+    // iteration to retrieve directory name and store the pool configuration into confPools container
     for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
-        XDGSearch::Configuration conf(p);
+        const XDGSearch::Configuration conf(p);
+        const auto currentPool = conf.getPools();
         switch (p) {
-        case XDGSearch::Pool::DESKTOP : if(!std::get<3>(conf.getPools()).empty())  {
+        case XDGSearch::Pool::DESKTOP : if(!std::get<3>(currentPool).empty())  {
                 ui ->desktopDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
                 ui ->desktopDirButton->setDisabled(true);
-                confPools.push_front(conf.getPools());
+                confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::TEMPLATES : if(!std::get<3>(conf.getPools()).empty())  {
+        case XDGSearch::Pool::TEMPLATES : if(!std::get<3>(currentPool).empty())  {
                 ui ->templateDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
                 ui ->templateDirButton->setDisabled(true);
-                confPools.push_front(conf.getPools());
+                confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::PUBLICSHARE : if(!std::get<3>(conf.getPools()).empty())  {
+        case XDGSearch::Pool::PUBLICSHARE : if(!std::get<3>(currentPool).empty())  {
                 ui ->publicshareDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
                 ui ->publicshareDirButton->setDisabled(true);
-                confPools.push_front(conf.getPools());
+                confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::DOCUMENTS : if(!std::get<3>(conf.getPools()).empty())  {
+        case XDGSearch::Pool::DOCUMENTS : if(!std::get<3>(currentPool).empty())  {
                 ui ->documentsDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
                 ui ->documentsDirButton->setDisabled(true);
-                confPools.push_front(conf.getPools());
+                confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::MUSIC : if(!std::get<3>(conf.getPools()).empty())  {
+        case XDGSearch::Pool::MUSIC : if(!std::get<3>(currentPool).empty())  {
                 ui ->musicDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
                 ui ->musicDirButton->setDisabled(true);
-                confPools.push_front(conf.getPools());
+                confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::PICTURES : if(!std::get<3>(conf.getPools()).empty())  {
+        case XDGSearch::Pool::PICTURES : if(!std::get<3>(currentPool).empty())  {
                 ui ->picturesDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
                 ui ->picturesDirButton->setDisabled(true);
-                confPools.push_front(conf.getPools());
+                confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::VIDEOS : if(!std::get<3>(conf.getPools()).empty())  {
+        case XDGSearch::Pool::VIDEOS : if(!std::get<3>(currentPool).empty())  {
                 ui ->videosDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
                 ui ->videosDirButton->setDisabled(true);
-                confPools.push_front(conf.getPools());
+                confPools.push_front(currentPool);
             }
             break;
         default:

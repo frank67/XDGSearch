@@ -110,7 +110,7 @@ void XDGSearch::forEachHelper(  const XDGSearch::helperType& h
 
     for(std::string e; std::getline(iss, e, ','); ) {
         e = "*." + e;       // prepare the string to add to the container, e.g.: *.pdf
-        filesExtensionFilter  << QString::fromStdString(e); // populate the QT container
+        filesExtensionFilter  << QString::fromStdString(e); // populate the QStringList container
     }
     // define a file iterator that:
     QDirIterator dirIt( QString::fromStdString(std::get<3>(currentPoolSettings))    // reads from the pool directory and so on
@@ -121,23 +121,17 @@ void XDGSearch::forEachHelper(  const XDGSearch::helperType& h
     while(dirIt.hasNext())  {   // outer loop: until file iterator reaches the end
         const std::string  fileFullPathName = dirIt.next().toStdString()    // fully qualified file name
                          , cmd = std::get<2>(h)         // start command line with command name
-                               + " \""                  // surround the arguments with quotation marks: ""
+                               + " \""                  // surrounds the arguments with quotation marks: ""
                                + fileFullPathName
                                + "\"";
         std::string cmdStdOut;      // container that'll hold the command's standard output
 
         FILE* pipe = popen(cmd.c_str(), "r");   // runs the command
-        try {
-            if (!pipe)
-                throw std::runtime_error("Helper: command line not valid!");    // if something goes wrong: throw
 
-            for(char buffer[512]; !feof(pipe); /* null */)
-                if (fgets(buffer, 512, pipe) != NULL)
-                    cmdStdOut += buffer;        // it reads the command standard output
-        } catch (...) {
-            pclose(pipe);
-            throw;
-        }
+        for(char buffer[512]; !feof(pipe); /* null */)
+            if (fgets(buffer, 512, pipe) != NULL)
+                cmdStdOut += buffer;        // it reads the command standard output
+
         pclose(pipe);
 
         unsigned int  linescounter = 0;

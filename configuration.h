@@ -19,14 +19,13 @@
 #ifndef CONFIGURATION
 #define CONFIGURATION
 
-#include <string>
 #include <memory>
 #include <utility>
 #include <tuple>
 #include <QSettings>
 
-namespace XDGSearch {               // open the application namespace
-enum class Pool {   DESKTOP         // define an enum class to hold the XDG keys that give name to the directories
+namespace XDGSearch {                   // open the application namespace
+enum class Pool {   DESKTOP             // define an enum class to hold the XDG keys that give name to the directories
                   , TEMPLATES
                   , PUBLICSHARE
                   , DOCUMENTS
@@ -35,7 +34,7 @@ enum class Pool {   DESKTOP         // define an enum class to hold the XDG keys
                   , VIDEOS
                   , SOURCES
                   , END };
-Pool& operator++(Pool&);                // declare ++ operator overloaded to provide pre-increment for the Pool type
+Pool& operator++(Pool&);                // declare prefix increment operator overloaded for the Pool type
 
 using poolType = std::tuple<  std::string       //  0 PoolName
                             , std::string       //  1 localPoolName

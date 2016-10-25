@@ -18,6 +18,9 @@
 
 #include "configuration.h"
 #include <fstream>
+#include <cstdio>
+#include <algorithm>
+#include <iostream>
 #include <QDir>
 #include <QStringList>
 #include <QSettings>
@@ -101,6 +104,7 @@ void XDGSearch::cfgDesktop::defaultSettings(const std::string& XDGKeyword)
     std::get<5>(pools) = "none";            // set stopwords file value to none
     addHelperToPool("odt");                 // default helper(s) for this pool
     addHelperToPool("image");
+    addHelperToPool("pdf");
 }
 
 void XDGSearch::cfgTemplates::defaultSettings(const std::string& XDGKeyword)
@@ -239,23 +243,42 @@ void XDGSearch::Settings::defaultSettings(const std::string& n = std::string())
 
 }
 
-const std::pair<std::string, std::string> XDGSearch::ConfigurationBase::getXDGKeysDirPath(const std::string& s)
+const std::pair<std::string, std::string> XDGSearch::ConfigurationBase::getXDGKeysDirPath(const std::string& XDGKey)
 {
     std::pair<std::string, std::string> retval;     // define an empty return value
-    const QString home    = QDir::homePath()
-                , xdgFile = home + "/.config/user-dirs.dirs";
 
-    std::ifstream ifs(xdgFile.toStdString());       // try to open the XDG file (user-dirs.dirs)
-                                                    // containing the key=directory pair
-    if(ifs)
-    {
-        const QSettings xdguserdir(xdgFile, QSettings::NativeFormat);
-        // The localized pool name:
-        retval.first  = xdguserdir.value(QString::fromStdString(s), "").toString().replace(0, 6, ""  ).toStdString();
-        // The directory full path name:
-        retval.second = xdguserdir.value(QString::fromStdString(s), "").toString().replace(0, 5, home).toStdString();
+    auto key = XDGKey.substr(4);        // retrieve the xdg key name: strip "XDG_" part
+    auto posToDel = key.find("_");
+    if(posToDel != std::string::npos)
+        key.erase(posToDel);            // now strip "_DIR" part
+
+    const std::string cmd = std::string("xdg-user-dir ")    // start command line with command name
+                          + key;                            // command line argument
+
+    std::string cmdStdOut;      // container that'll hold the command's standard output
+
+    FILE* pipe = popen(cmd.c_str(), "r");   // runs the command
+    if (!pipe)
+        return retval;
+
+    for(char buffer[512]; !feof(pipe); /* null */)
+        if (fgets(buffer, 512, pipe) != NULL)
+            cmdStdOut += buffer;        // it reads the command standard output
+    pclose(pipe);
+
+    posToDel = cmdStdOut.find("\n");
+    if(posToDel != std::string::npos)
+        cmdStdOut.erase(posToDel);      // strip the leading new-line character that terminates standard output
+
+    if(std::count(cmdStdOut.cbegin(), cmdStdOut.cend(), '/') != 3)  // dummy check: regular standard output has 3 slash
+        return retval;
+
+    auto posStartName = cmdStdOut.find_last_of("/");
+    if(posStartName != std::string::npos)   {
+        retval.first = cmdStdOut.substr(posStartName + 1);  // the localized pool name
+        retval.second = cmdStdOut;                          // fully qualified path name of the pool
     }
-    ifs.close();
+
     return retval;
 
 /*  Can't use QStandardPaths, see: https://bugreports.qt.io/browse/QTBUG-36171
@@ -321,7 +344,7 @@ void XDGSearch::ConfigurationBase::initSettings()
 {
     writeSettings(std::make_tuple("text" ,"txt,cpp,h"   ,"/bin/cat"          ,6));  // 6 helpers written to .conf file
     writeSettings(std::make_tuple("pdf"  ,"pdf"         ,"/usr/bin/pstotext" ,6));
-    writeSettings(std::make_tuple("odt"  ,"odt"         ,"/usr/bin/odt2txt"  ,6));
+    writeSettings(std::make_tuple("odt"  ,"odt,ods"     ,"/usr/bin/odt2txt"  ,6));
     writeSettings(std::make_tuple("image","jpg,jpeg,png","/usr/bin/iinfo -v" ,0));
     writeSettings(std::make_tuple("music","mp3,ogg"     ,"/usr/bin/mediainfo",0));
     writeSettings(std::make_tuple("video","mpg,avi,webm","/usr/bin/mediainfo",0));
