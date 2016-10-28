@@ -38,7 +38,7 @@ LIBS     += -lQt5Core \
 INCLUDEPATH += /usr/include/xapian-1.3
 
 # The application version
-VERSION = 0.10.1
+VERSION = 0.10.2
 
 # Defines the preprocessor macro to get the application version available in the application code
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
@@ -70,4 +70,5 @@ DISTFILES += \
     COPYING \
     icon/COPYING \
     icon/COPYING.LESSER \
-    icon/README.md
+    icon/README.md \
+    README.md

@@ -293,7 +293,7 @@ const std::pair<std::string, std::string> XDGSearch::ConfigurationBase::getXDGKe
 
 bool XDGSearch::ConfigurationBase::isFirstRun()
 {
-    auto workingDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    auto workingDir = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
 
     QDir appDBDir;
     appDBDir.mkpath(workingDir);

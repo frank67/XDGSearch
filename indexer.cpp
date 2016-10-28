@@ -137,7 +137,8 @@ void XDGSearch::forEachHelper(  const XDGSearch::helperType& h
         unsigned int  linescounter = 0;
         const unsigned int granularity = std::get<3>(h)
                          , maxLinesCounted = granularity;
-        std::istringstream(cmdStdOut).swap(iss);    // recycle iss object, now holds the command standard output
+        iss.clear();
+        iss.str(cmdStdOut);         // recycle iss object, now holds the command standard output
 
         for(std::string line, para; !iss.eof(); /* null */) { // inner loop: for each line of the command's standard output
             getline(iss, line);
@@ -272,10 +273,11 @@ try {
                         linkPath = linkPath + "/" + linkName;
                 // retrieve the data of the document pointed by the iterator
                 QString documentText = QString::fromStdString(matchesIterator.get_document().get_data());
-                std::istringstream(soughtTerms).swap(iss);  // recycle iss object now it holds the terms to search
+                iss.clear();
+                iss.str(soughtTerms);       // recycle iss object now it holds the terms to search
                 // iteration to achieve bolded sought terms effect when documentText will be added to composeHTML
                 for( std::string term
-                   ; std::getline(iss, term)
+                   ; iss >> term
                    ; /* null */)
                     for( int pos = documentText.indexOf(QString::fromStdString(term), 0, Qt::CaseInsensitive)
                        ; pos != -1

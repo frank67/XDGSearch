@@ -35,7 +35,7 @@ doing so XDGSearch now has the necessary to auto-configure itself through the wi
 ## Getting XDGSearch
 ```
 ~$ git clone https://github.com/frank67/XDGSearch
-~$ cd xdgsearch
+~$ cd XDGSearch
 ~$ qmake xdgsearch.pro -r -spec linux-g++-64
 ~$ make -j5
 ~$ ./xdgsearch

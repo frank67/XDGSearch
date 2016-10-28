@@ -253,7 +253,8 @@ void Wizard::fillPage2Widget()
 
 void Wizard::fillPage3Widget()
 {   // prepares a summary report of the configurations made to display before to accept the Wizard
-    std::ostringstream().swap(report);
+    report.str("");
+    report.clear();
     confPools.remove_if( [] (const XDGSearch::poolType& p)  // removes Sources pool from the container
                             { return std::get<0>(p) == "XDG_SOURCES_DIR"; });
 
