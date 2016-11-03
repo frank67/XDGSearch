@@ -48,7 +48,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->menuButton->addAction(ui->actionAbout);
     ui->menuButton->addAction(ui->action_Quit);
 
+    ui ->resultPane->setAlignment(Qt::AlignCenter);
     readMainWindowSizeAndPosition();
+    showSplashScreenText();
     populateCBox();     // populates poolCBox widget with local pool name
 
 }
@@ -221,9 +223,41 @@ void MainWindow::on_actionAbout_triggered()
                         + title
                         + "</span></p><p>Based on QT "
                         + QT_VERSION_STR
-                        + "</p><p>Copyright 2016 Franco Martelli All rights reserved.</p>"
+                        + "</p><p>Copyright &copy; 2016 Franco Martelli All rights reserved.</p>"
                         + "<p>The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE."
                         + "</p></body></html>";
 
     QMessageBox::about(this, title, body);
+}
+
+void MainWindow::on_sought_textEdited(const QString& text)
+{
+    if(text.isEmpty())
+        showSplashScreenText();
+}
+
+void MainWindow::showSplashScreenText()
+{
+    std::ostringstream composeHTML;
+    composeHTML  << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">" << "\n"
+                 << "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">" << "\n"
+                 << "p, li { white-space: pre-wrap; }" << "\n"
+                 << "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">" << "\n"
+                 << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>" << "\n"
+                 << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>" << "\n"
+                 << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>" << "\n"
+                 << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>" << "\n"
+                 << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>" << "\n"
+                 << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>" << "\n"
+                 << "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600; color:#bababa;\">Unexpected</span><span style=\" color:#bababa;\"> 'No item found'</span></p>" << "\n"
+                 << "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600; color:#bababa;\">- Have you rebuild the database?</span></p>" << "\n"
+                 << "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600; color:#bababa;\">- Have you right helper installed?</span></p></body></html>" << "\n";
+
+    ui ->resultPane->setHtml(QString::fromStdString(composeHTML.str()));  // show slash-screen text into resultPane widget
+}
+
+void MainWindow::on_poolCBox_activated(int index)
+{
+    Q_UNUSED(index)
+    showSplashScreenText();
 }

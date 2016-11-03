@@ -20,7 +20,6 @@
 #define INDEXER_H
 
 #include <memory>
-#include <sstream>
 #include <xapian.h>
 #include <QTemporaryDir>
 #include "configuration.h"

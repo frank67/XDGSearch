@@ -23,6 +23,7 @@
 #include "ui_mainwindow.h"
 #include <QMainWindow>
 #include <memory>
+#include <sstream>
 
 
 namespace Ui {
@@ -42,16 +43,19 @@ public:
     explicit MainWindow(QWidget* parent = 0);
     ~MainWindow();
 private slots:
-    void on_actionHistory_triggered();      // 4 slot invoked by each popup menu item
+    void on_actionHistory_triggered();      // 5 slot invoked by each popup menu item
     void on_actionRebuild_current_Pool_triggered();
     void on_actionRebuild_All_triggered();
     void on_actionPreferences_triggered();
+    void on_actionAbout_triggered();
 
     void on_resultPane_anchorClicked(const QUrl&);      // run proper application for each url type
 
     void on_sought_returnPressed();     // query database and shows result
 
-    void on_actionAbout_triggered();
+    void on_sought_textEdited(const QString&);
+
+    void on_poolCBox_activated(int);
 
 private:
     Ui::MainWindow* const ui;
@@ -61,6 +65,7 @@ private:
     bool maybeQuit();           // ask confirmation for quitting
     bool maybeBuildDB();        // ask confirmation for build pool's database (if it doesn't exist)
     void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE;    // close MainWindow
+    void showSplashScreenText();
 };
 
 #endif // MAINWINDOW_H
