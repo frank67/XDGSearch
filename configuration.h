@@ -68,12 +68,9 @@ friend class Configuration;
 public:
     virtual ~ConfigurationBase() = default;
     virtual void defaultSettings(const std::string&) = 0;
-protected:
-    const std::pair<std::string, std::string> getXDGKeysDirPath(const std::string&);    // retrive the XDG directory path by quering a key in the home directory XDG configuration file
-    void addHelperToPool(const std::string&);               // add specified helper to private pools tuple object defined in this class
+private:
     bool isFirstRun();                                      // check if "askQuitConfirmation" entry exist in the .conf file
     bool isPopulatedDB(const Pool&);                        // check if the object build from the specified pool has an already existing database
-    void initSettings();                                    // restore default settings
     void writeSettings(const helperType&);                  // write to .conf file contents of the tuple object
     void writeSettings(const poolType&);                    // write to .conf file contents of the tuple object
     const helperType enqueryHelper(const std::string&);     // return a tuple reading data from the .conf file
@@ -84,7 +81,10 @@ protected:
     QStringList getHelpersNameList();                       // query .conf file for the helpers list
     void saveMainWindowGeometry(const QByteArray&);         // set geometry and window position in .conf file
     const QByteArray readMainWindowGeometry();              // query geometry and window position in .conf file
-
+protected:
+    const std::pair<std::string, std::string> getXDGKeysDirPath(const std::string&);    // retrive the XDG directory path by quering a key in the home directory XDG configuration file
+    void addHelperToPool(const std::string&);               // add specified helper to private pools tuple object defined in this class
+    void initSettings();                                    // restore default settings
     poolType pools;
     QSettings settings;
 };
@@ -111,7 +111,7 @@ public:
     void saveMainWindowGeometry(const QByteArray& g) const       { d ->saveMainWindowGeometry(g); }
     const QByteArray readMainWindowGeometry() const     { return d ->readMainWindowGeometry(); }
 private:
-    std::unique_ptr<ConfigurationBase> d;
+    std::unique_ptr<XDGSearch::ConfigurationBase> d;
 };
 
 class XDGSearch::cfgDesktop final : public ConfigurationBase {
@@ -153,15 +153,7 @@ class XDGSearch::Settings final : public ConfigurationBase {
 inline
 XDGSearch::Configuration::Configuration()
 {
-    d = std::unique_ptr<ConfigurationBase>(new Settings);
-}
-
-inline
-void XDGSearch::ConfigurationBase::addHelperToPool(const std::string& h)
-{
-    if(!std::get<2>(pools).empty())
-        std::get<2>(pools) += ',';
-    std::get<2>(pools) += h;
+    d = std::unique_ptr<XDGSearch::ConfigurationBase>(new Settings);
 }
 
 #endif // CONFIGURATION

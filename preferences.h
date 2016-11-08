@@ -30,11 +30,9 @@ class Preferences;
 class Preferences : public QDialog
 {
     Q_OBJECT
-
 public:
     explicit Preferences(QWidget *parent = 0);
     ~Preferences();
-
 private slots:
     void on_poolDirButton_clicked();    // 3 slot invoked when button clicked
     void on_addHelper_clicked();
@@ -47,7 +45,6 @@ private slots:
     void on_stemCBox_activated(int);        // 3 slot invoked when ComboBox item selected
     void on_stopwordsCBox_activated(int);
     void on_poolCBox_activated(const QString&);
-
 private:
     Ui::Preferences *ui;
     QPushButton *buttonOk, *buttonApply;

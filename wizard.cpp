@@ -191,8 +191,10 @@ void Wizard::on_sourcesDirButton_clicked()
 }
 
 void Wizard::fillPage1Widget()
-{
+{   // when "next" is clicked, if the page is validate, retrieve values for the current page fields
+
     confPools.clear();  // clears container that holds configurations of all pools
+
     // iteration to retrieve directory name and store the pool configuration into confPools container
     for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
         const XDGSearch::Configuration conf(p);

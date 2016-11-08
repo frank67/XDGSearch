@@ -482,3 +482,10 @@ QStringList XDGSearch::ConfigurationBase::getHelpersNameList()
 
     return retval;
 }
+
+void XDGSearch::ConfigurationBase::addHelperToPool(const std::string& h)
+{
+    if(!std::get<2>(pools).empty())
+        std::get<2>(pools) += ',';
+    std::get<2>(pools) += h;
+}

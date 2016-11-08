@@ -22,26 +22,33 @@
 #include <memory>
 #include <xapian.h>
 #include <QTemporaryDir>
+#include <QObject>
 #include "configuration.h"
 
 namespace XDGSearch {
 class IndexerBase;          // "Cheshire Cat" implemention class for Indexer class
 class Indexer;              // Interface class for indexing/quering  operation
-void forEachHelper( const XDGSearch::helperType&
-                  , const XDGSearch::poolType&
-                  , Xapian::WritableDatabase* );    // threaded function to populate each pool's database
 }
 
-class XDGSearch::IndexerBase final {
+class XDGSearch::IndexerBase final : public QObject {
+    Q_OBJECT
 friend class Indexer;
     class queryResult;      // nested class to provide answer for sought terms
-    explicit IndexerBase(const Pool&);
-    void populateDB() const;    // build database for the current pool
+    IndexerBase(QObject*, const Pool&);
+    void populateDB();      // build database for the current pool
+    void forEachHelper( const XDGSearch::helperType&
+                      , const XDGSearch::poolType&
+                      , Xapian::WritableDatabase* );    // threaded function to populate each pool's database
     void seek(const std::string&);  // build a queryresult object and write result to htmlResult string
     const Xapian::MSet enqueryDB(const std::string&) const; // find a string in the current pool's database
+    void setProgressBarValue();     // determines values useful for the progress bar
+    void resetProgressBarValue();   // sets values for the progress bar to its initial values
+    double p_value, p_valueStep;    // p_value: the value passed to setvalue member, p_valueStep: progress bar increment step
     std::unique_ptr<XDGSearch::Configuration> conf;
     XDGSearch::poolType currentPoolSettings;
     std::string xdgKey, htmlResult;
+signals:
+    void progressValue(int);
 };
 
 class XDGSearch::IndexerBase::queryResult final   {
@@ -50,17 +57,21 @@ public:
     std::string getResult() const   { return htmlResult; }  // return an html formatted text suitable to an html viewer widget
 private:
     std::string composeResult(const Xapian::MSet&);     // translate the query answer to an html formatted string
-    std::string  htmlResult, soughtTerms;
+    std::string htmlResult, soughtTerms;
 };
 
-class XDGSearch::Indexer final  {
+class XDGSearch::Indexer final : public QObject {
+    Q_OBJECT
 public:
-    Indexer(const XDGSearch::Pool&);
+    Indexer(QObject*, const XDGSearch::Pool&);
+    ~Indexer();
     void populateDB() const         { return d ->populateDB(); }
     void seek(const std::string& s) { d ->seek(s); }
     std::string getResult() const   { return d ->htmlResult; }
+signals:
+    void progressValue(int);
 private:
-    std::unique_ptr<XDGSearch::IndexerBase> d;
+    XDGSearch::IndexerBase* const d;
 };
 
 inline
@@ -68,13 +79,9 @@ XDGSearch::IndexerBase::queryResult::queryResult(const std::string& s, const Xap
     soughtTerms(s)  { htmlResult = composeResult(m); }
 
 inline
-XDGSearch::Indexer::Indexer(const XDGSearch::Pool& p = XDGSearch::Pool::END) :
-    d(std::unique_ptr<XDGSearch::IndexerBase>(new IndexerBase(p)))      { }
-
-inline
 void XDGSearch::IndexerBase::seek(const std::string& s)
 {
-    XDGSearch::IndexerBase::queryResult qr(s, enqueryDB(s));
+    const XDGSearch::IndexerBase::queryResult qr(s, enqueryDB(s));
     htmlResult = qr.getResult();
 }
 

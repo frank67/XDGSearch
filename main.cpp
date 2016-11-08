@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("xdgsearch");
     QCoreApplication::setApplicationVersion(APP_VERSION);   // the version number is stored into xdgsearch.pro file
 
-    XDGSearch::Configuration conf;
+    const XDGSearch::Configuration conf;
     bool b = conf.isFirstRun();
 
     if(b)   {

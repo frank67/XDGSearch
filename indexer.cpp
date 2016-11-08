@@ -30,14 +30,49 @@
 #include <mutex>
 
 
-XDGSearch::IndexerBase::IndexerBase(const Pool& p) :    // initializes conf member with a Configuration object of Pool p type
+XDGSearch::IndexerBase::IndexerBase(QObject* parent, const Pool& p) :    // initializes conf member with a Configuration object of Pool p type
+        QObject(parent),
+        p_value(9.0),
+        p_valueStep(0.),
         conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration(p)))
 {
     currentPoolSettings = conf ->enqueryPool(); // retrieves settings of the current pool type
 }
 
-void XDGSearch::IndexerBase::populateDB() const
+XDGSearch::Indexer::Indexer(QObject* parent, const XDGSearch::Pool& p = XDGSearch::Pool::END) :
+    d(new IndexerBase(parent, p))
+{   // connects two signals: IndexerBase to Indexer
+    QObject::connect(d, &XDGSearch::IndexerBase::progressValue, this, &Indexer::progressValue);
+}
+
+XDGSearch::Indexer::~Indexer()
 {
+    delete d;
+}
+
+void XDGSearch::IndexerBase::resetProgressBarValue()
+{   // sets values for the progress bar to its initial values
+    p_value = 9.0;
+    p_valueStep = 0.;
+}
+
+void XDGSearch::IndexerBase::setProgressBarValue()
+{   // determines values useful for the progress bar
+    std::istringstream iss(std::get<2>(currentPoolSettings));   // stringstream for comma separated helpers list
+    double p_valueGrandTotal(0.);
+
+    for(std::string h; std::getline(iss, h, ','); /* null */)   // for each helper in the stringstream object
+        ++p_valueGrandTotal;
+
+    if(p_valueGrandTotal)
+        p_valueStep = 90 / p_valueGrandTotal;   // determines progress bar increment step value
+}
+
+void XDGSearch::IndexerBase::populateDB()
+{
+    emit progressValue(p_value);    // emits signal to change progress bar
+    setProgressBarValue();      // determines values useful for the progress bar
+
     QTemporaryDir tempDir;      // provide an auto-remove temporary directory under /tmp
     while(!tempDir.isValid())   // iterate until has a valid temporary directory name
         ;
@@ -59,17 +94,25 @@ try {
     for(const auto& h : poolHelpers)    {   // for each helper initializes a thread that's added to the container
         if(std::get<0>(h).empty())          // dummy checks, eventually skips empty helper
             continue;
-        helpersThread.push_front(std::unique_ptr<std::thread>(new std::thread( forEachHelper
+        helpersThread.push_front(std::unique_ptr<std::thread>(new std::thread( &IndexerBase::forEachHelper
+                                                                             , this
                                                                              , h
                                                                              , currentPoolSettings
                                                                              , tmpDB) ));
     }
+
     for(auto& t : helpersThread)
+    {
+        p_value += p_valueStep;
         t ->join();     // join each thread object stored in the container
+        emit progressValue(p_value);
+    }
 
     tmpDB ->compact(DBName);    // writes compacted database from /tmp to $HOME/.local/share/XDGSearch/xdgsearch
     tmpDB ->close();
     delete tmpDB;               // frees resources
+    emit progressValue(100);
+    resetProgressBarValue();    // set initial value when the database build process gets completed
 }
     catch(const Xapian::Error& e)  {
         std::cerr << e.get_description() << std::endl;
@@ -85,10 +128,10 @@ try {
     }
 }
 
-void XDGSearch::forEachHelper(  const XDGSearch::helperType& h
+void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
                               , const XDGSearch::poolType& currentPoolSettings
                               , Xapian::WritableDatabase* tmpDB)
-{
+{   // threaded function to populate each pool's database
     static std::unique_ptr<std::mutex> mtx1(new std::mutex);    // defines mutex to grant mutually exclusive rights to the threads that write the database
     const std::string stopWordsFile = "./stopwords/" + std::get<5>(currentPoolSettings);
 
@@ -137,6 +180,7 @@ void XDGSearch::forEachHelper(  const XDGSearch::helperType& h
         unsigned int  linescounter = 0;
         const unsigned int granularity = std::get<3>(h)
                          , maxLinesCounted = granularity;
+
         iss.clear();
         iss.str(cmdStdOut);         // recycle iss object, now holds the command standard output
 

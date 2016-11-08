@@ -22,6 +22,7 @@
 #include "indexer.h"    // first because required by Xapian
 #include "ui_mainwindow.h"
 #include <QMainWindow>
+#include <QProgressBar>
 #include <memory>
 #include <sstream>
 
@@ -50,22 +51,20 @@ private slots:
     void on_actionAbout_triggered();
 
     void on_resultPane_anchorClicked(const QUrl&);      // run proper application for each url type
-
     void on_sought_returnPressed();     // query database and shows result
-
-    void on_sought_textEdited(const QString&);
-
-    void on_poolCBox_activated(int);
+    void on_sought_textEdited(const QString&);  // when Qstring is empty reset resultPane ui widget
+    void on_poolCBox_activated(int);    // when triggered reset resultPane ui widget
 
 private:
-    Ui::MainWindow* const ui;
-    std::unique_ptr<XDGSearch::Configuration> conf;
+    Ui::MainWindow* ui;
+    QProgressBar progressBar;   // progress bar to show database builds progress that it grows helper by helper
+    std::unique_ptr<XDGSearch::Configuration> conf; // useful to perform query/set operations to the .conf file
     void readMainWindowSizeAndPosition();        // set the MainWindow position and geometry reading the .conf file
     void populateCBox();        // set the combobox adding local pools name
     bool maybeQuit();           // ask confirmation for quitting
     bool maybeBuildDB();        // ask confirmation for build pool's database (if it doesn't exist)
     void closeEvent(QCloseEvent* event) Q_DECL_OVERRIDE;    // close MainWindow
-    void showSplashScreenText();
+    void showSplashScreenText();    // shows helpful text in the resultPane ui widget
 };
 
 #endif // MAINWINDOW_H

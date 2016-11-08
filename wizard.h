@@ -41,14 +41,12 @@ using poolType = std::tuple<  std::string       //  0 PoolName
 class Wizard final : public QWizard
 {
     Q_OBJECT
-
 public:
     explicit Wizard(QWidget *parent = 0);
     ~Wizard();
 protected:
     bool validateCurrentPage() Q_DECL_OVERRIDE;     // calls proper validatePage?() function member
     void initializePage(int) Q_DECL_OVERRIDE;       // calls proper fillPage?Widget() function member
-
 private slots:
     void on_desktopDirButton_clicked();         // 8 slot invoked when button is clicked
     void on_templateDirButton_clicked();
@@ -60,7 +58,6 @@ private slots:
     void on_sourcesDirButton_clicked();
 
     void on_sourcesNoConfig_stateChanged(int);  // enable or disable Sources pool
-
     void on_Wizard_accepted();      // save to .conf file each pool's setting and provide initial helpers configuration
 
 private:

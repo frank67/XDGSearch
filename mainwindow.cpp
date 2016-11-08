@@ -29,6 +29,7 @@
 #include <thread>
 #include <memory>
 #include <forward_list>
+#include <QTimer>
 
 namespace Ui {
     class MainWindow;
@@ -37,8 +38,15 @@ namespace Ui {
 MainWindow::MainWindow(QWidget *parent) :
       QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , progressBar(parent)
     , conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration))
 {
+    progressBar.setMaximumHeight(13);
+    progressBar.setMaximumWidth(90);
+    progressBar.setTextVisible(false);
+    progressBar.setVisible(false);
+    progressBar.setRange(0, 100);
+    progressBar.setValue(1);
 
     ui->setupUi(this);  // prepares the UI
     ui->menuButton->addAction(ui->actionRebuild_current_Pool);  // 5 slot for menuButton widget
@@ -48,10 +56,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->menuButton->addAction(ui->actionAbout);
     ui->menuButton->addAction(ui->action_Quit);
 
-    ui ->resultPane->setAlignment(Qt::AlignCenter);
+
     readMainWindowSizeAndPosition();
     showSplashScreenText();
     populateCBox();     // populates poolCBox widget with local pool name
+    ui ->statusBar->addPermanentWidget(&this->progressBar, 0);
+    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Ready.")), 2000);  // displays " Ready." timed out by 2 sec
 
 }
 
@@ -144,14 +154,18 @@ void MainWindow::on_actionHistory_triggered()
 
 void MainWindow::on_actionRebuild_current_Pool_triggered()
 {   // rebuild and overwrite the database pointed by poolCBox combobox
+    progressBar.setVisible(true);
     const QString statusBarMessage = QString(QObject::trUtf8(" Indexing: "))
                                    + ui ->poolCBox->currentText()
                                    + QString(QObject::trUtf8(" pool ..."));
 
     ui ->statusBar->showMessage(statusBarMessage);  // informs the user by displaying a message in the status bar
-    XDGSearch::Indexer idx(ui ->poolCBox->currentData().value<XDGSearch::Pool>());  // build indexer by passing the pool value pointed from poolCBox
+    XDGSearch::Indexer idx(this, ui ->poolCBox->currentData().value<XDGSearch::Pool>());  // build indexer by passing the pool value pointed from poolCBox
+
+    QObject::connect(&idx, &XDGSearch::Indexer::progressValue, &this->progressBar, &QProgressBar::setValue);
     idx.populateDB();   // rebuild and overwrite the database
     ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  // displays " Done!" timed out by 2 sec
+    QTimer::singleShot(2000, &this->progressBar, &QProgressBar::hide);
 }
 
 void MainWindow::on_actionRebuild_All_triggered()
@@ -173,7 +187,7 @@ void MainWindow::on_actionRebuild_All_triggered()
 
 void XDGSearch::rebuildDB(const XDGSearch::Pool& p)
 {
-    XDGSearch::Indexer idx(p);
+    XDGSearch::Indexer idx(nullptr, p);
 
     idx.populateDB();
 }
@@ -197,7 +211,7 @@ void MainWindow::on_sought_returnPressed()
                                    + ui ->poolCBox->currentText()
                                    + QString(QObject::trUtf8(" pool ..."));
     const std::string soughtTerms = ui ->sought->text().toStdString();
-    XDGSearch::Indexer idx(p);
+    XDGSearch::Indexer idx(this, p);
 
     if(conf ->isPopulatedDB(p))
         idx.seek(soughtTerms);
@@ -231,13 +245,19 @@ void MainWindow::on_actionAbout_triggered()
 }
 
 void MainWindow::on_sought_textEdited(const QString& text)
-{
+{   // when Qstring is empty reset resultPane ui widget
     if(text.isEmpty())
         showSplashScreenText();
 }
 
+void MainWindow::on_poolCBox_activated(int index)
+{   // when triggered reset resultPane ui widget
+    Q_UNUSED(index)
+    showSplashScreenText();
+}
+
 void MainWindow::showSplashScreenText()
-{
+{   // shows helpful text in the resultPane ui widget
     std::ostringstream composeHTML;
     composeHTML  << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">" << "\n"
                  << "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">" << "\n"
@@ -254,10 +274,4 @@ void MainWindow::showSplashScreenText()
                  << "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600; color:#bababa;\">- Have you right helper installed?</span></p></body></html>" << "\n";
 
     ui ->resultPane->setHtml(QString::fromStdString(composeHTML.str()));  // show slash-screen text into resultPane widget
-}
-
-void MainWindow::on_poolCBox_activated(int index)
-{
-    Q_UNUSED(index)
-    showSplashScreenText();
 }

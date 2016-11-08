@@ -26,6 +26,7 @@ QT      += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG   += c++11
+QMAKE_CXXFLAGS *= $(shell dpkg-buildflags --get CXXFLAGS)
 
 TARGET = xdgsearch
 TEMPLATE = app
@@ -38,7 +39,7 @@ LIBS     += -lQt5Core \
 INCLUDEPATH += /usr/include/xapian-1.3
 
 # The application version
-VERSION = 0.10.3
+VERSION = 0.11.0
 
 # Defines the preprocessor macro to get the application version available in the application code
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
