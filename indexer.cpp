@@ -64,6 +64,12 @@ void XDGSearch::IndexerBase::setProgressBarValue()
     for(std::string h; std::getline(iss, h, ','); /* null */)   // for each helper in the stringstream object
         ++p_valueGrandTotal;
 
+    if(p_valueGrandTotal == 1.)
+    {
+        p_valueStep = 60;
+        return;
+    }
+
     if(p_valueGrandTotal)
         p_valueStep = 90 / p_valueGrandTotal;   // determines progress bar increment step value
 }
@@ -104,8 +110,8 @@ try {
     for(auto& t : helpersThread)
     {
         p_value += p_valueStep;
-        t ->join();     // join each thread object stored in the container
         emit progressValue(p_value);
+        t ->join();     // join each thread object stored in the container
     }
 
     tmpDB ->compact(DBName);    // writes compacted database from /tmp to $HOME/.local/share/XDGSearch/xdgsearch
@@ -170,6 +176,9 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
         std::string cmdStdOut;      // container that'll hold the command's standard output
 
         FILE* pipe = popen(cmd.c_str(), "r");   // runs the command
+        // may returns this error message: "Syntax error: EOF in backquote substitution"
+        // if so the filename (fileFullPathName) may contains characters that they needed to be escaped
+        // like backtick ` FYI
 
         for(char buffer[512]; !feof(pipe); /* null */)
             if (fgets(buffer, 512, pipe) != NULL)

@@ -54,6 +54,7 @@ private slots:
     void on_sought_returnPressed();     // query database and shows result
     void on_sought_textEdited(const QString&);  // when Qstring is empty reset resultPane ui widget
     void on_poolCBox_activated(int);    // when triggered reset resultPane ui widget
+    void on_resultPane_highlighted(const QUrl&);   // when hover over a url then shows it into status-bar
 
 private:
     Ui::MainWindow* ui;

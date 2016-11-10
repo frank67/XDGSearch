@@ -60,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     readMainWindowSizeAndPosition();
     showSplashScreenText();
     populateCBox();     // populates poolCBox widget with local pool name
+    ui ->sought->setFocus();
     ui ->statusBar->addPermanentWidget(&this->progressBar, 0);
     ui ->statusBar->showMessage(QString(QObject::trUtf8(" Ready.")), 2000);  // displays " Ready." timed out by 2 sec
 
@@ -253,6 +254,7 @@ void MainWindow::on_sought_textEdited(const QString& text)
 void MainWindow::on_poolCBox_activated(int index)
 {   // when triggered reset resultPane ui widget
     Q_UNUSED(index)
+    ui ->sought->setFocus();
     showSplashScreenText();
 }
 
@@ -274,4 +276,9 @@ void MainWindow::showSplashScreenText()
                  << "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600; color:#bababa;\">- Have you right helper installed?</span></p></body></html>" << "\n";
 
     ui ->resultPane->setHtml(QString::fromStdString(composeHTML.str()));  // show slash-screen text into resultPane widget
+}
+
+void MainWindow::on_resultPane_highlighted(const QUrl &url)
+{   // when hover over a url then shows it into status-bar
+    ui ->statusBar->showMessage(url.toString());
 }
