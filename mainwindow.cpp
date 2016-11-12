@@ -165,14 +165,17 @@ void MainWindow::on_actionRebuild_current_Pool_triggered()
 
     QObject::connect(&idx, &XDGSearch::Indexer::progressValue, &this->progressBar, &QProgressBar::setValue);
     idx.populateDB();   // rebuild and overwrite the database
-    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  // displays " Done!" timed out by 2 sec
-    QTimer::singleShot(2000, &this->progressBar, &QProgressBar::hide);
+    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  // displays " Done!" timed out by 2 seconds
+    QTimer::singleShot(2000, &this->progressBar, &QProgressBar::hide);  // hide progressBar timed out by 2 seconds
 }
 
 void MainWindow::on_actionRebuild_All_triggered()
 {   // rebuild and overwrite all the databases
+    progressBar.setVisible(true);
+    progressBar.setValue(0);
     const QString statusBarMessage = QString(QObject::trUtf8(" Indexing all pool in progress ..."));
     std::forward_list<std::unique_ptr<std::thread>> idxThread;
+    unsigned int p_value(0);
 
 
     for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)
@@ -180,10 +183,15 @@ void MainWindow::on_actionRebuild_All_triggered()
 
     ui->statusBar->showMessage(statusBarMessage);
 
-    for(auto& t : idxThread)
+    for(auto& t : idxThread)    {
+        p_value += 12;
+        progressBar.setValue(p_value);
         t ->join();
+    }
 
-    ui->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);
+    ui->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);   // displays " Done!" timed out by 2 seconds
+    progressBar.setValue(100);
+    QTimer::singleShot(2000, &this->progressBar, SLOT(hide()));  // hide progressBar timed out by 2 seconds
 }
 
 void XDGSearch::rebuildDB(const XDGSearch::Pool& p)

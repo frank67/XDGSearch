@@ -306,7 +306,7 @@ bool XDGSearch::ConfigurationBase::isFirstRun()
                              , cmd = "cp "
                                    + fileFullPathName
                                    + " stopwords";
-            std::system(cmd.c_str());   // invoke "cp /usr/share/xapian-core/stopwords/foo stopwords" command
+            Q_UNUSED(std::system(cmd.c_str()));   // invoke "cp /usr/share/xapian-core/stopwords/foo stopwords" command
         }
     }
     settings.beginGroup("global");      // test is first run checking askQuitConfirmation key in xdgsearch.conf
