@@ -166,7 +166,7 @@ void MainWindow::on_actionRebuild_current_Pool_triggered()
     QObject::connect(&idx, &XDGSearch::Indexer::progressValue, &this->progressBar, &QProgressBar::setValue);
     idx.populateDB();   // rebuild and overwrite the database
     ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  // displays " Done!" timed out by 2 seconds
-    QTimer::singleShot(2000, &this->progressBar, &QProgressBar::hide);  // hide progressBar timed out by 2 seconds
+    QTimer::singleShot(2000, &this->progressBar, SLOT(hide()));  // hide progressBar timed out by 2 seconds
 }
 
 void MainWindow::on_actionRebuild_All_triggered()
