@@ -45,6 +45,7 @@ based on:
 - Qt 5.5.1 (GCC 5.2.1 20151129, 64 bit)
 - g++ (Ubuntu 5.4.0-6ubuntu1~16.04.2) 5.4.0 20160609
 - libxapian-1.3-dev 1.3.4-0ubuntu6
+
 Dependencies :
 - libqt5core5a
 - libqt5widgets5
