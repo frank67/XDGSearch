@@ -48,8 +48,8 @@ MainWindow::MainWindow(QWidget *parent) :
     progressBar.setRange(0, 100);
     progressBar.setValue(1);
 
-    ui->setupUi(this);  // prepares the UI
-    ui->menuButton->addAction(ui->actionRebuild_current_Pool);  // 5 slot for menuButton widget
+    ui->setupUi(this);  /// prepares the UI
+    ui->menuButton->addAction(ui->actionRebuild_current_Pool);  /// 5 slot for menuButton widget
     ui->menuButton->addAction(ui->actionRebuild_All);
     //ui->menuButton->addAction(ui->actionHistory);
     ui->menuButton->addAction(ui->actionPreferences);
@@ -59,10 +59,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     readMainWindowSizeAndPosition();
     showSplashScreenText();
-    populateCBox();     // populates poolCBox widget with local pool name
+    populateCBox();     /// populates poolCBox widget with local pool name
     ui ->sought->setFocus();
     ui ->statusBar->addPermanentWidget(&this->progressBar, 0);
-    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Ready.")), 2000);  // displays " Ready." timed out by 2 sec
+    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Ready.")), 2000);  /// displays " Ready." timed out by 2 sec
 
 }
 
@@ -85,18 +85,18 @@ void MainWindow::readMainWindowSizeAndPosition()
 }
 
 void MainWindow::populateCBox()
-{   // iteration that retrieves each local pool name and adds it to poolCBox
+{   /// iteration that retrieves each local pool name and adds it to poolCBox
     for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
         XDGSearch::Configuration conf(p);
         auto pt = conf.enqueryPool();
-        if(!std::get<1>(pt).empty())
-            ui ->poolCBox ->addItem(QString::fromStdString(std::get<1>(pt)), QVariant::fromValue(p));
+        if(!std::get<XDGSearch::LOCALPOOLNAME>(pt).empty())
+            ui ->poolCBox ->addItem(QString::fromStdString(std::get<XDGSearch::LOCALPOOLNAME>(pt)), QVariant::fromValue(p));
     }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (maybeQuit()) {  // if not disabled by the user opens a dialog to ask close window confirmation
+    if (maybeQuit()) {  /// if not disabled by the user opens a dialog to ask close window confirmation
         conf ->saveMainWindowGeometry(QWidget::saveGeometry());
         event->accept();
     } else
@@ -106,16 +106,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
 bool MainWindow::maybeQuit()
 {
     if(conf ->askForConfirmation())
-        return true;    // the user has disabled the close window dialog (the checkBox was clicked)
+        return true;    /// the user has disabled the close window dialog (the checkBox was clicked)
 
     bool retval = false;
-    // a dialog will be shown to ask for confirmation to close window
+    /// a dialog will be shown to ask for confirmation to close window
     QMessageBox* mb = new QMessageBox(  QMessageBox::Question
                                       , QCoreApplication::applicationName()
                                       , QObject::trUtf8("Do you really want to quit?")
                                       , QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No
                                       , this);
-    // provide a checkBox into the dialog window, if clicked the dialog window won't be shown
+    /// provide a checkBox into the dialog window, if clicked the dialog window won't be shown
     QCheckBox* cb = new QCheckBox(QObject::trUtf8("Don't ask me again"), mb);
     mb ->setCheckBox(cb);
 
@@ -131,7 +131,7 @@ bool MainWindow::maybeQuit()
 }
 
 bool MainWindow::maybeBuildDB()
-{   // dialog window to ask confirmation for build a database
+{   /// dialog window to ask confirmation for build a database
     bool retval = false;
     QMessageBox* mb = new QMessageBox(  QMessageBox::Question
                                       , QCoreApplication::applicationName()
@@ -154,23 +154,23 @@ void MainWindow::on_actionHistory_triggered()
 }
 
 void MainWindow::on_actionRebuild_current_Pool_triggered()
-{   // rebuild and overwrite the database pointed by poolCBox combobox
+{   /// rebuild and overwrite the database pointed by poolCBox combobox
     progressBar.setVisible(true);
     const QString statusBarMessage = QString(QObject::trUtf8(" Indexing: "))
                                    + ui ->poolCBox->currentText()
                                    + QString(QObject::trUtf8(" pool ..."));
 
-    ui ->statusBar->showMessage(statusBarMessage);  // informs the user by displaying a message in the status bar
-    XDGSearch::Indexer idx(this, ui ->poolCBox->currentData().value<XDGSearch::Pool>());  // build indexer by passing the pool value pointed from poolCBox
+    ui ->statusBar->showMessage(statusBarMessage);  /// informs the user by displaying a message in the status bar
+    XDGSearch::Indexer idx(this, ui ->poolCBox->currentData().value<XDGSearch::Pool>());  /// build indexer by passing the pool value pointed from poolCBox
 
     QObject::connect(&idx, &XDGSearch::Indexer::progressValue, &this->progressBar, &QProgressBar::setValue);
-    idx.populateDB();   // rebuild and overwrite the database
-    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  // displays " Done!" timed out by 2 seconds
-    QTimer::singleShot(2000, &this->progressBar, SLOT(hide()));  // hide progressBar timed out by 2 seconds
+    idx.populateDB();   /// rebuild and overwrite the database
+    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  /// displays " Done!" timed out by 2 seconds
+    QTimer::singleShot(2000, &this->progressBar, SLOT(hide()));  /// hide progressBar timed out by 2 seconds
 }
 
 void MainWindow::on_actionRebuild_All_triggered()
-{   // rebuild and overwrite all the databases
+{   /// rebuild and overwrite all the databases
     progressBar.setVisible(true);
     progressBar.setValue(0);
     const QString statusBarMessage = QString(QObject::trUtf8(" Indexing all pool in progress ..."));
@@ -189,9 +189,9 @@ void MainWindow::on_actionRebuild_All_triggered()
         t ->join();
     }
 
-    ui->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);   // displays " Done!" timed out by 2 seconds
+    ui->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);   /// displays " Done!" timed out by 2 seconds
     progressBar.setValue(100);
-    QTimer::singleShot(2000, &this->progressBar, SLOT(hide()));  // hide progressBar timed out by 2 seconds
+    QTimer::singleShot(2000, &this->progressBar, SLOT(hide()));  /// hide progressBar timed out by 2 seconds
 }
 
 void XDGSearch::rebuildDB(const XDGSearch::Pool& p)
@@ -202,19 +202,19 @@ void XDGSearch::rebuildDB(const XDGSearch::Pool& p)
 }
 
 void MainWindow::on_actionPreferences_triggered()
-{   // displays preference dialog
+{   /// displays preference dialog
     QDialog* d = new Preferences(this);
     d->exec();
     delete d;
 }
 
 void MainWindow::on_resultPane_anchorClicked(const QUrl& u)
-{   // starts the application associated to the file extension
+{   /// starts the application associated to the file extension
     QDesktopServices::openUrl(u);
 }
 
 void MainWindow::on_sought_returnPressed()
-{   // performs the query of the sought terms and it will display the database's documents that match the search
+{   /// performs the query of the sought terms and it will display the database's documents that match the search
     const XDGSearch::Pool p = ui ->poolCBox->currentData().value<XDGSearch::Pool>();
     const QString statusBarMessage = QString(QObject::trUtf8(" Indexing: "))
                                    + ui ->poolCBox->currentText()
@@ -225,21 +225,21 @@ void MainWindow::on_sought_returnPressed()
     if(conf ->isPopulatedDB(p))
         idx.seek(soughtTerms);
     else    {
-        if(maybeBuildDB())  {   // asks the user whether wanna build the database
+        if(maybeBuildDB())  {   /// asks the user whether wanna build the database
             ui ->statusBar->showMessage(statusBarMessage);
             idx.populateDB();
             ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);
             idx.seek(soughtTerms);
-        } else  {       // informs the user that rebuild database is necessary
+        } else  {       /// informs the user that rebuild database is necessary
             ui ->statusBar->showMessage(QString(QObject::trUtf8(" Rebuilding database is necessary")), 2000);
             return;
         }
     }
-    ui ->resultPane->setHtml(QString::fromStdString(idx.getResult()));  // show results into resultPane widget
+    ui ->resultPane->setHtml(QString::fromStdString(idx.getResult()));  /// show results into resultPane widget
 }
 
 void MainWindow::on_actionAbout_triggered()
-{   // displays "about" application window
+{   /// displays "about" application window
     const QString title = QString("XDGSearch ")
                         + QCoreApplication::applicationVersion();
     const QString body  = QString("<html><head/><body><p><span style=\" font-size:11pt; font-weight:600;\">")
@@ -254,20 +254,20 @@ void MainWindow::on_actionAbout_triggered()
 }
 
 void MainWindow::on_sought_textEdited(const QString& text)
-{   // when Qstring is empty reset resultPane ui widget
+{   /// when Qstring is empty reset resultPane ui widget
     if(text.isEmpty())
         showSplashScreenText();
 }
 
 void MainWindow::on_poolCBox_activated(int index)
-{   // when triggered reset resultPane ui widget
+{   /// when triggered reset resultPane ui widget
     Q_UNUSED(index)
     ui ->sought->setFocus();
     showSplashScreenText();
 }
 
 void MainWindow::showSplashScreenText()
-{   // shows helpful text in the resultPane ui widget
+{   /// shows helpful text in the resultPane ui widget
     std::ostringstream composeHTML;
     composeHTML  << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">" << "\n"
                  << "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">" << "\n"
@@ -283,10 +283,10 @@ void MainWindow::showSplashScreenText()
                  << "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600; color:#bababa;\">- Have you rebuild the database?</span></p>" << "\n"
                  << "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600; color:#bababa;\">- Have you right helper installed?</span></p></body></html>" << "\n";
 
-    ui ->resultPane->setHtml(QString::fromStdString(composeHTML.str()));  // show slash-screen text into resultPane widget
+    ui ->resultPane->setHtml(QString::fromStdString(composeHTML.str()));  /// show slash-screen text into resultPane widget
 }
 
 void MainWindow::on_resultPane_highlighted(const QUrl &url)
-{   // when hover over a url then shows it into status-bar
+{   /// when hover over a url then shows it into status-bar
     ui ->statusBar->showMessage(url.toString());
 }

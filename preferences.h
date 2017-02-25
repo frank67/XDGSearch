@@ -34,24 +34,24 @@ public:
     explicit Preferences(QWidget *parent = 0);
     ~Preferences();
 private slots:
-    void on_poolDirButton_clicked();    // 3 slot invoked when button clicked
+    void on_poolDirButton_clicked();    /// 3 slot invoked when button clicked
     void on_addHelper_clicked();
     void on_removeHelper_clicked();
 
-    void clicked_buttonBoxCancel();     // 3 custom slot invoked when button clicked
+    void clicked_buttonBoxCancel();     /// 3 custom slot invoked when button clicked
     void clicked_buttonBoxOk();
     void clicked_buttonBoxApply();
 
-    void on_stemCBox_activated(int);        // 3 slot invoked when ComboBox item selected
+    void on_stemCBox_activated(int);        /// 3 slot invoked when ComboBox item selected
     void on_stopwordsCBox_activated(int);
     void on_poolCBox_activated(const QString&);
 private:
     Ui::Preferences *ui;
     QPushButton *buttonOk, *buttonApply;
     bool changesAlreadyApplied;
-    void fillPageInitValue();       // initial value for combobox, list, fields
-    void refreshHelpersList();      // read .conf file and update the list of helpers
-    XDGSearch::poolType collectWidgetValue(const XDGSearch::Configuration&);    // read UI combobox, list, field storing each value into a tuple
+    void fillPageInitValue();       /// initial value for combobox, list, fields
+    void refreshHelpersList();      /// read .conf file and update the list of helpers
+    XDGSearch::poolType collectWidgetValue(const XDGSearch::Configuration&);    /// read UI combobox, list, field storing each value into a tuple
 };
 
-#endif // PREFERENCES_H
+#endif /// PREFERENCES_H

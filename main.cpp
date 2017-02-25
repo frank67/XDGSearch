@@ -28,14 +28,14 @@ int main(int argc, char *argv[])
     QApplication::setEffectEnabled(Qt::UI_AnimateCombo);
     QCoreApplication::setOrganizationName("XDGSearch");
     QCoreApplication::setApplicationName("xdgsearch");
-    QCoreApplication::setApplicationVersion(APP_VERSION);   // the version number is stored into xdgsearch.pro file
+    QCoreApplication::setApplicationVersion(APP_VERSION);   /// the version number is stored into xdgsearch.pro file
 
     const XDGSearch::Configuration conf;
     bool b = conf.isFirstRun();
 
     if(b)   {
         Wizard wiz;
-        if(wiz.exec() == QDialog::Accepted) {   // opens wizard dialog and if accepted opens xdgsearch's mainwindow
+        if(wiz.exec() == QDialog::Accepted) {   /// opens wizard dialog and if accepted opens xdgsearch's mainwindow
             MainWindow w0;
             w0.show();
             return a.exec();

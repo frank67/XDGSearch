@@ -26,24 +26,24 @@
 #include "configuration.h"
 
 namespace XDGSearch {
-class IndexerBase;          // "Cheshire Cat" implemention class for Indexer class
-class Indexer;              // Interface class for indexing/quering  operation
+class IndexerBase;          /// "Cheshire Cat" implemention class for Indexer class
+class Indexer;              /// Interface class for indexing/quering  operation
 }
 
 class XDGSearch::IndexerBase final : public QObject {
     Q_OBJECT
 friend class Indexer;
-    class queryResult;      // nested class to provide answer for sought terms
+    class queryResult;      /// nested class to provide answer for sought terms
     IndexerBase(QObject*, const Pool&);
-    void populateDB();      // build database for the current pool
+    void populateDB();      /// build database for the current pool
     void forEachHelper( const XDGSearch::helperType&
                       , const XDGSearch::poolType&
-                      , Xapian::WritableDatabase* );    // threaded function to populate each pool's database
-    void seek(const std::string&);  // build a queryresult object and write result to htmlResult string
-    const Xapian::MSet enqueryDB(const std::string&) const; // find a string in the current pool's database
-    void setProgressBarValue();     // determines values useful for the progress bar
-    void resetProgressBarValue();   // sets values for the progress bar to its initial values
-    double p_value, p_valueStep;    // p_value: the value passed to setvalue member, p_valueStep: progress bar increment step
+                      , Xapian::WritableDatabase* );    /// threaded function to populate each pool's database
+    void seek(const std::string&);  /// build a queryresult object and write result to htmlResult string
+    const Xapian::MSet enqueryDB(const std::string&) const; /// find a string in the current pool's database
+    void setProgressBarValue();     /// determines values useful for the progress bar
+    void resetProgressBarValue();   /// sets values for the progress bar to its initial values
+    double p_value, p_valueStep;    /// p_value: the value passed to setvalue member, p_valueStep: progress bar increment step
     std::unique_ptr<XDGSearch::Configuration> conf;
     XDGSearch::poolType currentPoolSettings;
     std::string xdgKey, htmlResult;
@@ -53,10 +53,10 @@ signals:
 
 class XDGSearch::IndexerBase::queryResult final   {
 public:
-    queryResult(const std::string&, const Xapian::MSet&);   // ctor that handle the query answers
-    std::string getResult() const   { return htmlResult; }  // return an html formatted text suitable to an html viewer widget
+    queryResult(const std::string&, const Xapian::MSet&);   /// ctor that handle the query answers
+    std::string getResult() const   { return htmlResult; }  /// return an html formatted text suitable to an html viewer widget
 private:
-    std::string composeResult(const Xapian::MSet&);     // translate the query answer to an html formatted string
+    std::string composeResult(const Xapian::MSet&);     /// translate the query answer to an html formatted string
     std::string htmlResult, soughtTerms;
 };
 
@@ -85,4 +85,4 @@ void XDGSearch::IndexerBase::seek(const std::string& s)
     htmlResult = qr.getResult();
 }
 
-#endif // INDEXER_H
+#endif /// INDEXER_H

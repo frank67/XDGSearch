@@ -25,7 +25,7 @@ Wizard::Wizard(QWidget *parent) :
     QWizard(parent),
     ui(new Ui::Wizard)
 {
-    ui->setupUi(this);  // prepares the UI
+    ui->setupUi(this);  /// prepares the UI
 }
 
 Wizard::~Wizard()
@@ -34,7 +34,7 @@ Wizard::~Wizard()
 }
 
 bool Wizard::validateCurrentPage()
-{   // overrided inherited member in order to validate each current page
+{   /// overrided inherited member in order to validate each current page
     switch (this ->currentId()) {
     case WIZARDPAGE1 :
         return validatePage1();
@@ -48,7 +48,7 @@ bool Wizard::validateCurrentPage()
 }
 
 bool Wizard::validatePage1()
-{   // fails if a directory pool name has no value
+{   /// fails if a directory pool name has no value
     if(  ui ->desktopDir->text().isEmpty()
       || ui ->templateDir->text().isEmpty()
       || ui ->publicshareDir->text().isEmpty()
@@ -66,31 +66,31 @@ bool Wizard::validatePage1()
         auto currentPool = conf.getPools();
         switch (p) {
         case XDGSearch::Pool::DESKTOP :
-            std::get<3>(currentPool) = ui ->desktopDir ->text().toStdString();
+            std::get<XDGSearch::POOLDIRPATH>(currentPool) = ui ->desktopDir ->text().toStdString();
             confPools.push_front(currentPool);
             break;
         case XDGSearch::Pool::TEMPLATES :
-            std::get<3>(currentPool) = ui ->templateDir ->text().toStdString();
+            std::get<XDGSearch::POOLDIRPATH>(currentPool) = ui ->templateDir ->text().toStdString();
             confPools.push_front(currentPool);
             break;
         case XDGSearch::Pool::PUBLICSHARE :
-            std::get<3>(currentPool) = ui ->publicshareDir ->text().toStdString();
+            std::get<XDGSearch::POOLDIRPATH>(currentPool) = ui ->publicshareDir ->text().toStdString();
             confPools.push_front(currentPool);
             break;
         case XDGSearch::Pool::DOCUMENTS :
-            std::get<3>(currentPool) = ui ->documentsDir ->text().toStdString();
+            std::get<XDGSearch::POOLDIRPATH>(currentPool) = ui ->documentsDir ->text().toStdString();
             confPools.push_front(currentPool);
             break;
         case XDGSearch::Pool::MUSIC :
-            std::get<3>(currentPool) = ui ->musicDir ->text().toStdString();
+            std::get<XDGSearch::POOLDIRPATH>(currentPool) = ui ->musicDir ->text().toStdString();
             confPools.push_front(currentPool);
             break;
         case XDGSearch::Pool::PICTURES :
-            std::get<3>(currentPool) = ui ->picturesDir ->text().toStdString();
+            std::get<XDGSearch::POOLDIRPATH>(currentPool) = ui ->picturesDir ->text().toStdString();
             confPools.push_front(currentPool);
             break;
         case XDGSearch::Pool::VIDEOS :
-            std::get<3>(currentPool) = ui ->videosDir ->text().toStdString();
+            std::get<XDGSearch::POOLDIRPATH>(currentPool) = ui ->videosDir ->text().toStdString();
             confPools.push_front(currentPool);
             break;
         default:
@@ -102,7 +102,7 @@ bool Wizard::validatePage1()
 }
 
 bool Wizard::validatePage2()
-{   // fails if Source directory pool name has no value
+{   /// fails if Source directory pool name has no value
     if(!  ui ->sourcesNoConfig->isChecked()
        && ui ->sourcesDir->text().isEmpty() )
         return false;
@@ -116,7 +116,7 @@ bool Wizard::validatePage3()
 
 
 void Wizard::initializePage(int id)
-{   // overrided inherited member in order to fill fields of each current page
+{   /// overrided inherited member in order to fill fields of each current page
     switch (id) {
     case WIZARDINTRO :
         break;
@@ -135,7 +135,7 @@ void Wizard::initializePage(int id)
 }
 
 const QString Wizard::chooseDirectoryDialog()
-{   // ask the user to provide a directory name for the pool
+{   /// ask the user to provide a directory name for the pool
     const QString retval = QFileDialog::getExistingDirectory( this
                                                             , QObject::trUtf8("Select directory")
                                                             , QDir::homePath()
@@ -145,8 +145,8 @@ const QString Wizard::chooseDirectoryDialog()
 
 void Wizard::on_desktopDirButton_clicked()
 {
-    confPools.clear();          // empties container will be populated to the validation-page time
-    ui ->desktopDir->setText(chooseDirectoryDialog());  // sets the chosen directory to the widget's field text
+    confPools.clear();          /// empties container will be populated to the validation-page time
+    ui ->desktopDir->setText(chooseDirectoryDialog());  /// sets the chosen directory to the widget's field text
 }
 
 void Wizard::on_templateDirButton_clicked()
@@ -191,53 +191,53 @@ void Wizard::on_sourcesDirButton_clicked()
 }
 
 void Wizard::fillPage1Widget()
-{   // when "next" is clicked, if the page is validate, retrieve values for the current page fields
+{   /// when "next" is clicked, if the page is validate, retrieve values for the current page fields
 
-    confPools.clear();  // clears container that holds configurations of all pools
+    confPools.clear();  /// clears container that holds configurations of all pools
 
-    // iteration to retrieve directory name and store the pool configuration into confPools container
+    /// iteration to retrieve directory name and store the pool configuration into confPools container
     for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
         const XDGSearch::Configuration conf(p);
         const auto currentPool = conf.getPools();
         switch (p) {
-        case XDGSearch::Pool::DESKTOP : if(!std::get<3>(currentPool).empty())  {
-                ui ->desktopDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
+        case XDGSearch::Pool::DESKTOP : if(!std::get<XDGSearch::POOLDIRPATH>(currentPool).empty())  {
+                ui ->desktopDir->setText(QString::fromStdString(std::get<XDGSearch::POOLDIRPATH>(conf.getPools())));
                 ui ->desktopDirButton->setDisabled(true);
                 confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::TEMPLATES : if(!std::get<3>(currentPool).empty())  {
-                ui ->templateDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
+        case XDGSearch::Pool::TEMPLATES : if(!std::get<XDGSearch::POOLDIRPATH>(currentPool).empty())  {
+                ui ->templateDir->setText(QString::fromStdString(std::get<XDGSearch::POOLDIRPATH>(conf.getPools())));
                 ui ->templateDirButton->setDisabled(true);
                 confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::PUBLICSHARE : if(!std::get<3>(currentPool).empty())  {
-                ui ->publicshareDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
+        case XDGSearch::Pool::PUBLICSHARE : if(!std::get<XDGSearch::POOLDIRPATH>(currentPool).empty())  {
+                ui ->publicshareDir->setText(QString::fromStdString(std::get<XDGSearch::POOLDIRPATH>(conf.getPools())));
                 ui ->publicshareDirButton->setDisabled(true);
                 confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::DOCUMENTS : if(!std::get<3>(currentPool).empty())  {
-                ui ->documentsDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
+        case XDGSearch::Pool::DOCUMENTS : if(!std::get<XDGSearch::POOLDIRPATH>(currentPool).empty())  {
+                ui ->documentsDir->setText(QString::fromStdString(std::get<XDGSearch::POOLDIRPATH>(conf.getPools())));
                 ui ->documentsDirButton->setDisabled(true);
                 confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::MUSIC : if(!std::get<3>(currentPool).empty())  {
-                ui ->musicDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
+        case XDGSearch::Pool::MUSIC : if(!std::get<XDGSearch::POOLDIRPATH>(currentPool).empty())  {
+                ui ->musicDir->setText(QString::fromStdString(std::get<XDGSearch::POOLDIRPATH>(conf.getPools())));
                 ui ->musicDirButton->setDisabled(true);
                 confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::PICTURES : if(!std::get<3>(currentPool).empty())  {
-                ui ->picturesDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
+        case XDGSearch::Pool::PICTURES : if(!std::get<XDGSearch::POOLDIRPATH>(currentPool).empty())  {
+                ui ->picturesDir->setText(QString::fromStdString(std::get<XDGSearch::POOLDIRPATH>(conf.getPools())));
                 ui ->picturesDirButton->setDisabled(true);
                 confPools.push_front(currentPool);
             }
             break;
-        case XDGSearch::Pool::VIDEOS : if(!std::get<3>(currentPool).empty())  {
-                ui ->videosDir->setText(QString::fromStdString(std::get<3>(conf.getPools())));
+        case XDGSearch::Pool::VIDEOS : if(!std::get<XDGSearch::POOLDIRPATH>(currentPool).empty())  {
+                ui ->videosDir->setText(QString::fromStdString(std::get<XDGSearch::POOLDIRPATH>(conf.getPools())));
                 ui ->videosDirButton->setDisabled(true);
                 confPools.push_front(currentPool);
             }
@@ -254,18 +254,18 @@ void Wizard::fillPage2Widget()
 }
 
 void Wizard::fillPage3Widget()
-{   // prepares a summary report of the configurations made to display before to accept the Wizard
+{   /// prepares a summary report of the configurations made to display before to accept the Wizard
     report.str("");
     report.clear();
-    confPools.remove_if( [] (const XDGSearch::poolType& p)  // removes Sources pool from the container
-                            { return std::get<0>(p) == "XDG_SOURCES_DIR"; });
+    confPools.remove_if( [] (const XDGSearch::poolType& p)  /// removes Sources pool from the container
+                            { return std::get<XDGSearch::XDGPOOLNAME>(p) == "XDG_SOURCES_DIR"; });
 
-    report  <<  "\nSummary:\n\n"            // summary report header
+    report  <<  "\nSummary:\n\n"            /// summary report header
             <<  "<Pool name>\t\t<Directory>\n";
 
     for(const auto& p : confPools)
-        report  << " "  << std::get<1>(p)   << ":\t\t\""    // localized pool name
-                        << std::get<3>(p)   << "\"\n";      // pool's directory name
+        report  << " "  << std::get<XDGSearch::LOCALPOOLNAME>(p)   << ":\t\t\""    /// localized pool name
+                        << std::get<XDGSearch::POOLDIRPATH>(p)   << "\"\n";      /// pool's directory name
 
     if( !ui ->sourcesNoConfig->isChecked() )    {
         report  <<  " Sources"    << ":\t\t\""
@@ -282,11 +282,11 @@ void Wizard::fillPage3Widget()
         confPools.push_front(std::make_tuple("XDG_SOURCES_DIR", "", "", "", "none", "none"));
     }
 
-    ui ->summaryLabel->setText(QString::fromStdString(report.str()));   // displays the resulting report
+    ui ->summaryLabel->setText(QString::fromStdString(report.str()));   /// displays the resulting report
 }
 
 void Wizard::on_sourcesNoConfig_stateChanged(int s)
-{   // on toggling of sourcesNoConfig accordingly sets the widgets
+{   /// on toggling of sourcesNoConfig accordingly sets the widgets
     switch (s) {
     case Qt::Unchecked :
         ui ->sourcesDirButton->setDisabled(false);
@@ -304,11 +304,11 @@ void Wizard::on_sourcesNoConfig_stateChanged(int s)
 }
 
 void Wizard::on_Wizard_accepted()
-{   // once accepted write configurations stored in confPool into the .conf file
-    XDGSearch::Configuration conf;  // no pool provided to the constructor, Settings derivated class is used
+{   /// once accepted write configurations stored in confPool into the .conf file
+    XDGSearch::Configuration conf;  /// no pool provided to the constructor, Settings derivated class is used
     for(const auto& p : confPools)
         conf.writeSettings(p);
 
-    conf.initSettings();    // after that pool settings are been written now it writes initial helpers settings
+    conf.initSettings();    /// after that pool settings are been written now it writes initial helpers settings
 
 }
