@@ -30,12 +30,12 @@ class Wizard;
 }
 
 namespace XDGSearch {
-using poolType = std::tuple<  std::string       //  0 PoolName
-                            , std::string       //  1 localPoolName
-                            , std::string       //  2 PoolHelpers
-                            , std::string       //  3 PoolDirPath
-                            , std::string       //  4 stemming
-                            , std::string>;     //  5 stopwordsfile
+using poolType = std::tuple<  std::string       ///  0 PoolName
+                            , std::string       ///  1 localPoolName
+                            , std::string       ///  2 PoolHelpers
+                            , std::string       ///  3 PoolDirPath
+                            , std::string       ///  4 stemming
+                            , std::string>;     ///  5 stopwordsfile
 }
 
 class Wizard final : public QWizard
@@ -45,10 +45,10 @@ public:
     explicit Wizard(QWidget *parent = 0);
     ~Wizard();
 protected:
-    bool validateCurrentPage() Q_DECL_OVERRIDE;     // calls proper validatePage?() function member
-    void initializePage(int) Q_DECL_OVERRIDE;       // calls proper fillPage?Widget() function member
+    bool validateCurrentPage() Q_DECL_OVERRIDE;     /// calls proper validatePage?() function member
+    void initializePage(int) Q_DECL_OVERRIDE;       /// calls proper fillPage?Widget() function member
 private slots:
-    void on_desktopDirButton_clicked();         // 8 slot invoked when button is clicked
+    void on_desktopDirButton_clicked();         /// 8 slot invoked when button is clicked
     void on_templateDirButton_clicked();
     void on_publicshareDirButton_clicked();
     void on_documentsDirButton_clicked();
@@ -57,24 +57,24 @@ private slots:
     void on_videosDirButton_clicked();
     void on_sourcesDirButton_clicked();
 
-    void on_sourcesNoConfig_stateChanged(int);  // enable or disable Sources pool
-    void on_Wizard_accepted();      // save to .conf file each pool's setting and provide initial helpers configuration
+    void on_sourcesNoConfig_stateChanged(int);  /// enable or disable Sources pool
+    void on_Wizard_accepted();      /// save to .conf file each pool's setting and provide initial helpers configuration
 
 private:
-    void fillPage1Widget();     // when "next" is clicked, if the page is validate,
-    void fillPage2Widget();     // retrieve values for the current page fields
+    void fillPage1Widget();     /// when "next" is clicked, if the page is validate,
+    void fillPage2Widget();     /// retrieve values for the current page fields
     void fillPage3Widget();
-    bool validatePage1();       // when "next" is clicked validate fields letting to leave the current page
+    bool validatePage1();       /// when "next" is clicked validate fields letting to leave the current page
     bool validatePage2();
     bool validatePage3();
     const QString chooseDirectoryDialog();
     Ui::Wizard *ui;
-    enum { WIZARDINTRO = 0      // assigns a name to each page id
-         , WIZARDPAGE1 = 1
-         , WIZARDPAGE2 = 2
-         , WIZARDPAGE3 = 3 };
-    std::ostringstream report;      // holds summarized choices done page by page
-    std::forward_list<XDGSearch::poolType> confPools;   // once the pool is configured then it's added to this container
+    enum { WIZARDINTRO      /// assigns a name to each page id
+         , WIZARDPAGE1
+         , WIZARDPAGE2
+         , WIZARDPAGE3 };
+    std::ostringstream report;      /// holds summarized choices done page by page
+    std::forward_list<XDGSearch::poolType> confPools;   /// once the pool is configured then it's added to this container
 };
 
-#endif // WIZARD_H
+#endif /// WIZARD_H

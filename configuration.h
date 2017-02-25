@@ -24,8 +24,8 @@
 #include <tuple>
 #include <QSettings>
 
-namespace XDGSearch {                   // open the application namespace
-enum class Pool {   DESKTOP             // define an enum class to hold the XDG keys that give name to the directories
+namespace XDGSearch {                   /// open the application namespace
+enum class Pool {   DESKTOP             /// define an enum class to hold the XDG keys that give name to the directories
                   , TEMPLATES
                   , PUBLICSHARE
                   , DOCUMENTS
@@ -34,23 +34,39 @@ enum class Pool {   DESKTOP             // define an enum class to hold the XDG 
                   , VIDEOS
                   , SOURCES
                   , END };
-Pool& operator++(Pool&);                // declare prefix increment operator overloaded for the Pool type
+Pool& operator++(Pool&);                /// declare prefix increment operator overloaded for the Pool type
 
-using poolType = std::tuple<  std::string       //  0 PoolName
-                            , std::string       //  1 localPoolName
-                            , std::string       //  2 PoolHelpers
-                            , std::string       //  3 PoolDirPath
-                            , std::string       //  4 stemming
-                            , std::string>;     //  5 stopwordsfile
+using poolType = std::tuple<  std::string       ///  0 XDGPoolName
+                            , std::string       ///  1 localPoolName
+                            , std::string       ///  2 PoolHelpers
+                            , std::string       ///  3 PoolDirPath
+                            , std::string       ///  4 stemming
+                            , std::string>;     ///  5 stopwordsfile
 
-using helperType = std::tuple<std::string       //  0 helper name
-                            , std::string       //  1 extensions
-                            , std::string       //  2 command line
-                            , unsigned int>;    //  3 granularity
-std::string toXDGKey(const Pool&);              // translate from Pool type item to string name key
-class Configuration;                    // Interface class for configuration/settings  operation
-class ConfigurationBase;                // "Cheshire Cat" implemention class for Configuration class
-class cfgDesktop;                       // Specialized classes that inherit from ConfigurationBase to define its pure virtual funcion
+enum {
+      XDGPOOLNAME
+    , LOCALPOOLNAME
+    , POOLHELPERS
+    , POOLDIRPATH
+    , STEMMING
+    , STOPWORDSFILE
+};
+
+using helperType = std::tuple<std::string       ///  0 helper name
+                            , std::string       ///  1 extensions
+                            , std::string       ///  2 command line
+                            , unsigned int>;    ///  3 granularity
+enum {
+      HELPERNAME
+    , EXTENSIONS
+    , COMMANDLINE
+    , GRANULARITY
+};
+
+std::string toXDGKey(const Pool&);              /// translate from Pool type item to string name key
+class Configuration;                    /// Interface class for configuration/settings  operation
+class ConfigurationBase;                /// "Cheshire Cat" implemention class for Configuration class
+class cfgDesktop;                       /// Specialized classes that inherit from ConfigurationBase to define its pure virtual funcion
 class cfgTemplates;
 class cfgPublicShare;
 class cfgDocuments;
@@ -58,10 +74,10 @@ class cfgMusic;
 class cfgPictures;
 class cfgVideos;
 class cfgSources;
-class Settings;                         // Class used from Configuration when it has to deal with settings operations
+class Settings;                         /// Class used from Configuration when it has to deal with settings operations
 }
 
-Q_DECLARE_METATYPE(XDGSearch::Pool)     // macro used from QVariant in MainWindow::populateCBox()
+Q_DECLARE_METATYPE(XDGSearch::Pool)     /// macro used from QVariant in MainWindow::populateCBox()
 
 class XDGSearch::ConfigurationBase  {
 friend class Configuration;
@@ -69,22 +85,22 @@ public:
     virtual ~ConfigurationBase() = default;
     virtual void defaultSettings(const std::string&) = 0;
 private:
-    bool isFirstRun();                                      // check if "askQuitConfirmation" entry exist in the .conf file
-    bool isPopulatedDB(const Pool&);                        // check if the object build from the specified pool has an already existing database
-    void writeSettings(const helperType&);                  // write to .conf file contents of the tuple object
-    void writeSettings(const poolType&);                    // write to .conf file contents of the tuple object
-    const helperType enqueryHelper(const std::string&);     // return a tuple reading data from the .conf file
-    const poolType   enqueryPool();                         // return a tuple reading data from the .conf file
-    void removeHelper(const std::string&);                  // remove all entries for the specified helper name in .conf file
-    bool askForConfirmation();                              // query .conf file "askQuitConfirmation" entry
-    void setAskForConfirmation(bool);                       // set "askQuitConfirmation" .conf file entry
-    QStringList getHelpersNameList();                       // query .conf file for the helpers list
-    void saveMainWindowGeometry(const QByteArray&);         // set geometry and window position in .conf file
-    const QByteArray readMainWindowGeometry();              // query geometry and window position in .conf file
+    bool isFirstRun();                                      /// check if "askQuitConfirmation" entry exist in the .conf file
+    bool isPopulatedDB(const Pool&);                        /// check if the object build from the specified pool has an already existing database
+    void writeSettings(const helperType&);                  /// write to .conf file contents of the tuple object
+    void writeSettings(const poolType&);                    /// write to .conf file contents of the tuple object
+    const helperType enqueryHelper(const std::string&);     /// return a tuple reading data from the .conf file
+    const poolType   enqueryPool();                         /// return a tuple reading data from the .conf file
+    void removeHelper(const std::string&);                  /// remove all entries for the specified helper name in .conf file
+    bool askForConfirmation();                              /// query .conf file "askQuitConfirmation" entry
+    void setAskForConfirmation(bool);                       /// set "askQuitConfirmation" .conf file entry
+    QStringList getHelpersNameList();                       /// query .conf file for the helpers list
+    void saveMainWindowGeometry(const QByteArray&);         /// set geometry and window position in .conf file
+    const QByteArray readMainWindowGeometry();              /// query geometry and window position in .conf file
 protected:
-    const std::pair<std::string, std::string> getXDGKeysDirPath(const std::string&);    // retrive the XDG directory path by quering a key in the home directory XDG configuration file
-    void addHelperToPool(const std::string&);               // add specified helper to private pools tuple object defined in this class
-    void initSettings();                                    // restore default settings
+    const std::pair<std::string, std::string> getXDGKeysDirPath(const std::string&);    /// retrive the XDG directory path by quering a key in the home directory XDG configuration file
+    void addHelperToPool(const std::string&);               /// add specified helper to private pools tuple object defined in this class
+    void initSettings();                                    /// restore default settings
     poolType pools;
     QSettings settings;
 };
@@ -156,5 +172,5 @@ XDGSearch::Configuration::Configuration()
     d = std::unique_ptr<XDGSearch::ConfigurationBase>(new Settings);
 }
 
-#endif // CONFIGURATION
+#endif /// CONFIGURATION
 

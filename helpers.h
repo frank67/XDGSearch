@@ -36,21 +36,21 @@ public:
     ~Helpers();
     QString getHelperName() const   { return selectedHelper; }
 private slots:
-    void on_addHelper_clicked();    // 2 slots invoked on button clicked
+    void on_addHelper_clicked();    /// 2 slots invoked on button clicked
     void on_removeHelper_clicked();
 
-    void clicked_buttonBoxCancel();     // 4 custom slots invoked after signal emitted: see connect in the class constructor definition
+    void clicked_buttonBoxCancel();     /// 4 custom slots invoked after signal emitted: see connect in the class constructor definition
     void clicked_buttonBoxOk();
     void clicked_buttonBoxRestoreDefault();
     void clicked_buttonBoxApply();
 
-    void on_helperName_editingFinished();   // 4 slots invoked when the user ends editing
+    void on_helperName_editingFinished();   /// 4 slots invoked when the user ends editing
     void on_helperCmdLine_editingFinished();
     void on_helperFileExt_editingFinished();
     void on_helperGranularity_editingFinished();
 
     void on_helpersList_currentItemChanged( QListWidgetItem *current
-                                          , QListWidgetItem *previous );    // slot invoked when selected a item in the list
+                                          , QListWidgetItem *previous );    /// slot invoked when selected a item in the list
 private:
     Ui::Helpers *ui;
     std::unique_ptr<XDGSearch::Configuration> conf;
@@ -63,4 +63,4 @@ private:
     void refreshHelpersList();
 };
 
-#endif // HELPERS_H
+#endif /// HELPERS_H

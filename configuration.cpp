@@ -70,7 +70,7 @@ XDGSearch::Configuration::Configuration(const XDGSearch::Pool& p = Pool::END)
     }
 }
 
-// overload prefix increment operator on XDGSearch::Pool type
+/// overload prefix increment operator on XDGSearch::Pool type
 XDGSearch::Pool& XDGSearch::operator++(Pool& p)
 {
         switch(p)       {
@@ -91,17 +91,17 @@ void XDGSearch::cfgDesktop::defaultSettings(const std::string& XDGKeyword)
 {
     auto p = getXDGKeysDirPath(XDGKeyword);
     auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<0>(pools) = XDGKeyword;        // assign the XDG key, e.g.: XDG_DESKTOP_DIR (see class ctor)
+    std::get<XDGPOOLNAME>(pools) = XDGKeyword;        /// assign the XDG key, e.g.: XDG_DESKTOP_DIR (see class ctor)
     if(p != emptyP) {
-        std::get<1>(pools) = p.first;       // assign localized pool name
-        std::get<3>(pools) = p.second;      // assign XDG directory full path name
+        std::get<LOCALPOOLNAME>(pools) = p.first;       /// assign localized pool name
+        std::get<POOLDIRPATH>(pools) = p.second;      /// assign XDG directory full path name
     }
     else {
-        std::get<1>(pools) = "Desktop";     // if getXDGKeysDirPath fails provide a default name for the pool
+        std::get<LOCALPOOLNAME>(pools) = "Desktop";     /// if getXDGKeysDirPath fails provide a default name for the pool
     }
-    std::get<4>(pools) = "none";            // set stem language to "none"
-    std::get<5>(pools) = "none";            // set stopwords file value to none
-    addHelperToPool("odt");                 // default helper(s) for this pool
+    std::get<STEMMING>(pools) = "none";            /// set stem language to "none"
+    std::get<STOPWORDSFILE>(pools) = "none";            /// set stopwords file value to none
+    addHelperToPool("odt");                 /// default helper(s) for this pool
     addHelperToPool("image");
     addHelperToPool("pdf");
 }
@@ -110,16 +110,16 @@ void XDGSearch::cfgTemplates::defaultSettings(const std::string& XDGKeyword)
 {
     auto p = getXDGKeysDirPath(XDGKeyword);
     auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<0>(pools) = XDGKeyword;
+    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
-        std::get<1>(pools) = p.first;
-        std::get<3>(pools) = p.second;
+        std::get<LOCALPOOLNAME>(pools) = p.first;
+        std::get<POOLDIRPATH>(pools) = p.second;
     }
     else {
-        std::get<1>(pools) = "Templates";
+        std::get<LOCALPOOLNAME>(pools) = "Templates";
     }
-    std::get<4>(pools) = "none";
-    std::get<5>(pools) = "none";
+    std::get<STEMMING>(pools) = "none";
+    std::get<STOPWORDSFILE>(pools) = "none";
     addHelperToPool("odt");
     addHelperToPool("text");
 }
@@ -128,16 +128,16 @@ void XDGSearch::cfgPublicShare::defaultSettings(const std::string& XDGKeyword)
 {
     auto p = getXDGKeysDirPath(XDGKeyword);
     auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<0>(pools) = XDGKeyword;
+    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
-        std::get<1>(pools) = p.first;
-        std::get<3>(pools) = p.second;
+        std::get<LOCALPOOLNAME>(pools) = p.first;
+        std::get<POOLDIRPATH>(pools) = p.second;
     }
     else {
-        std::get<1>(pools) = "PublicShare";
+        std::get<LOCALPOOLNAME>(pools) = "PublicShare";
     }
-    std::get<4>(pools) = "none";
-    std::get<5>(pools) = "none";
+    std::get<STEMMING>(pools) = "none";
+    std::get<STOPWORDSFILE>(pools) = "none";
     addHelperToPool("odt");
     addHelperToPool("image");
     addHelperToPool("pdf");
@@ -147,16 +147,16 @@ void XDGSearch::cfgDocuments::defaultSettings(const std::string& XDGKeyword)
 {
     auto p = getXDGKeysDirPath(XDGKeyword);
     auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<0>(pools) = XDGKeyword;
+    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
-        std::get<1>(pools) = p.first;
-        std::get<3>(pools) = p.second;
+        std::get<LOCALPOOLNAME>(pools) = p.first;
+        std::get<POOLDIRPATH>(pools) = p.second;
     }
     else {
-        std::get<1>(pools) = "Documents";
+        std::get<LOCALPOOLNAME>(pools) = "Documents";
     }
-    std::get<4>(pools) = "none";
-    std::get<5>(pools) = "none";
+    std::get<STEMMING>(pools) = "none";
+    std::get<STOPWORDSFILE>(pools) = "none";
     addHelperToPool("odt");
     addHelperToPool("pdf");
 }
@@ -165,16 +165,16 @@ void XDGSearch::cfgMusic::defaultSettings(const std::string& XDGKeyword)
 {
     auto p = getXDGKeysDirPath(XDGKeyword);
     auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<0>(pools) = XDGKeyword;
+    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
-        std::get<1>(pools) = p.first;
-        std::get<3>(pools) = p.second;
+        std::get<LOCALPOOLNAME>(pools) = p.first;
+        std::get<POOLDIRPATH>(pools) = p.second;
     }
     else {
-        std::get<1>(pools) = "Music";
+        std::get<LOCALPOOLNAME>(pools) = "Music";
     }
-    std::get<4>(pools) = "none";
-    std::get<5>(pools) = "none";
+    std::get<STEMMING>(pools) = "none";
+    std::get<STOPWORDSFILE>(pools) = "none";
     addHelperToPool("music");
 }
 
@@ -182,16 +182,16 @@ void XDGSearch::cfgPictures::defaultSettings(const std::string& XDGKeyword)
 {
     auto p = getXDGKeysDirPath(XDGKeyword);
     auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<0>(pools) = XDGKeyword;
+    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
-        std::get<1>(pools) = p.first;
-        std::get<3>(pools) = p.second;
+        std::get<LOCALPOOLNAME>(pools) = p.first;
+        std::get<POOLDIRPATH>(pools) = p.second;
     }
     else {
-        std::get<1>(pools) = "Pictures";
+        std::get<LOCALPOOLNAME>(pools) = "Pictures";
     }
-    std::get<4>(pools) = "none";
-    std::get<5>(pools) = "none";
+    std::get<STEMMING>(pools) = "none";
+    std::get<STOPWORDSFILE>(pools) = "none";
     addHelperToPool("image");
 }
 
@@ -199,25 +199,25 @@ void XDGSearch::cfgVideos::defaultSettings(const std::string& XDGKeyword)
 {
     auto p = getXDGKeysDirPath(XDGKeyword);
     auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<0>(pools) = XDGKeyword;
+    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
-        std::get<1>(pools) = p.first;
-        std::get<3>(pools) = p.second;
+        std::get<LOCALPOOLNAME>(pools) = p.first;
+        std::get<POOLDIRPATH>(pools) = p.second;
     }
     else {
-        std::get<1>(pools) = "Videos";
+        std::get<LOCALPOOLNAME>(pools) = "Videos";
     }
-    std::get<4>(pools) = "none";
-    std::get<5>(pools) = "none";
+    std::get<STEMMING>(pools) = "none";
+    std::get<STOPWORDSFILE>(pools) = "none";
     addHelperToPool("media");
 }
 
 void XDGSearch::cfgSources::defaultSettings(const std::string& XDGKeyword)
 {
-    std::get<0>(pools) = XDGKeyword;
-    std::get<1>(pools) = "Sources";
-    std::get<4>(pools) = "none";
-    std::get<5>(pools) = "none";
+    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
+    std::get<LOCALPOOLNAME>(pools) = "Sources";
+    std::get<STEMMING>(pools) = "none";
+    std::get<STOPWORDSFILE>(pools) = "none";
 
     addHelperToPool("text");
 }
@@ -244,38 +244,38 @@ void XDGSearch::Settings::defaultSettings(const std::string& n = std::string())
 
 const std::pair<std::string, std::string> XDGSearch::ConfigurationBase::getXDGKeysDirPath(const std::string& XDGKey)
 {
-    std::pair<std::string, std::string> retval;     // define an empty return value
+    std::pair<std::string, std::string> retval;     /// define an empty return value
 
-    auto key = XDGKey.substr(4);        // retrieve the xdg key name: strip "XDG_" part
+    auto key = XDGKey.substr(4);        /// retrieve the xdg key name: strip "XDG_" part
     auto posToDel = key.find("_");
     if(posToDel != std::string::npos)
-        key.erase(posToDel);            // now strip "_DIR" part
+        key.erase(posToDel);            /// now strip "_DIR" part
 
-    const std::string cmd = std::string("xdg-user-dir ")    // start command line with command name
-                          + key;                            // command line argument
+    const std::string cmd = std::string("xdg-user-dir ")    /// start command line with command name
+                          + key;                            /// command line argument
 
-    std::string cmdStdOut;      // container that'll hold the command's standard output
+    std::string cmdStdOut;      /// container that'll hold the command's standard output
 
-    FILE* pipe = popen(cmd.c_str(), "r");   // runs the command
+    FILE* pipe = popen(cmd.c_str(), "r");   /// runs the command
     if (!pipe)
         return retval;
 
     for(char buffer[512]; !feof(pipe); /* null */)
         if (fgets(buffer, 512, pipe) != NULL)
-            cmdStdOut += buffer;        // it reads the command standard output
+            cmdStdOut += buffer;        /// it reads the command standard output
     pclose(pipe);
 
     posToDel = cmdStdOut.find("\n");
     if(posToDel != std::string::npos)
-        cmdStdOut.erase(posToDel);      // strip the leading new-line character that terminates standard output
+        cmdStdOut.erase(posToDel);      /// strip the leading new-line character that terminates standard output
 
-    if(std::count(cmdStdOut.cbegin(), cmdStdOut.cend(), '/') != 3)  // dummy check: regular standard output has 3 slash
+    if(std::count(cmdStdOut.cbegin(), cmdStdOut.cend(), '/') != 3)  /// dummy check: regular standard output has 3 slash
         return retval;
 
     auto posStartName = cmdStdOut.find_last_of("/");
     if(posStartName != std::string::npos)   {
-        retval.first = cmdStdOut.substr(posStartName + 1);  // the localized pool name
-        retval.second = cmdStdOut;                          // fully qualified path name of the pool
+        retval.first = cmdStdOut.substr(posStartName + 1);  /// the localized pool name
+        retval.second = cmdStdOut;                          /// fully qualified path name of the pool
     }
 
     return retval;
@@ -297,8 +297,8 @@ bool XDGSearch::ConfigurationBase::isFirstRun()
 
     QDir appDBDir;
     appDBDir.mkpath(workingDir);
-    appDBDir.setCurrent(workingDir);    // !!! set the application working directory !!!
-    if(appDBDir.mkdir("stopwords"))  {  // true if not exist, make directory and populate merging stopwords files
+    appDBDir.setCurrent(workingDir);    /// !!! set the application working directory !!!
+    if(appDBDir.mkdir("stopwords"))  {  /// true if not exist, make directory and populate merging stopwords files
         QDirIterator dirIt("/usr/share/xapian-core/stopwords", QDir::Files);
 
         while(dirIt.hasNext())  {
@@ -306,10 +306,10 @@ bool XDGSearch::ConfigurationBase::isFirstRun()
                              , cmd = "cp "
                                    + fileFullPathName
                                    + " stopwords";
-            Q_UNUSED(std::system(cmd.c_str()));   // invoke "cp /usr/share/xapian-core/stopwords/foo stopwords" command
+            Q_UNUSED(std::system(cmd.c_str()));   /// invoke "cp /usr/share/xapian-core/stopwords/foo stopwords" command
         }
     }
-    settings.beginGroup("global");      // test is first run checking askQuitConfirmation key in xdgsearch.conf
+    settings.beginGroup("global");      /// test is first run checking askQuitConfirmation key in xdgsearch.conf
     bool retval = settings.contains("askQuitConfirmation");
     settings.endGroup();
     return !retval;
@@ -318,30 +318,30 @@ bool XDGSearch::ConfigurationBase::isFirstRun()
 void XDGSearch::ConfigurationBase::writeSettings(const helperType& ht)
 {
     settings.beginGroup("helpers");
-    settings.setValue(QString::fromStdString(std::get<0>(ht)), true);   // store helper name in the "helpers" section
+    settings.setValue(QString::fromStdString(std::get<HELPERNAME>(ht)), true);   /// store helper name in the "helpers" section
     settings.endGroup();
 
-    settings.beginGroup(QString::fromStdString(std::get<0>(ht)));   // create helper section name into .conf file
-    settings.setValue("extension"  , QString::fromStdString(std::get<1>(ht)));    // helper section items
-    settings.setValue("commandline", QString::fromStdString(std::get<2>(ht)));
-    settings.setValue("granularity", std::get<3>(ht));
-    settings.endGroup();    // close section
+    settings.beginGroup(QString::fromStdString(std::get<HELPERNAME>(ht)));   /// create helper section name into .conf file
+    settings.setValue("extension"  , QString::fromStdString(std::get<EXTENSIONS>(ht)));    /// helper section items
+    settings.setValue("commandline", QString::fromStdString(std::get<COMMANDLINE>(ht)));
+    settings.setValue("granularity", std::get<GRANULARITY>(ht));
+    settings.endGroup();    /// close section
 }
 
 void XDGSearch::ConfigurationBase::writeSettings(const poolType& pt)
 {
-    settings.beginGroup(QString::fromStdString(std::get<0>(pt)));   // create pool section name into .conf file
-    settings.setValue("localpoolname", QString::fromStdString(std::get<1>(pt)));    // pool section items in .conf file
-    settings.setValue("poolhelpers"  , QString::fromStdString(std::get<2>(pt)));
-    settings.setValue("pooldirpath"  , QString::fromStdString(std::get<3>(pt)));
-    settings.setValue("stemmed"      , QString::fromStdString(std::get<4>(pt)));
-    settings.setValue("stopwordsfile", QString::fromStdString(std::get<5>(pt)));
-    settings.endGroup();    // close section
+    settings.beginGroup(QString::fromStdString(std::get<XDGPOOLNAME>(pt)));   /// create pool section name into .conf file
+    settings.setValue("localpoolname", QString::fromStdString(std::get<LOCALPOOLNAME>(pt)));    /// pool section items in .conf file
+    settings.setValue("poolhelpers"  , QString::fromStdString(std::get<POOLHELPERS>(pt)));
+    settings.setValue("pooldirpath"  , QString::fromStdString(std::get<POOLDIRPATH>(pt)));
+    settings.setValue("stemmed"      , QString::fromStdString(std::get<STEMMING>(pt)));
+    settings.setValue("stopwordsfile", QString::fromStdString(std::get<STOPWORDSFILE>(pt)));
+    settings.endGroup();    /// close section
 }
 
 void XDGSearch::ConfigurationBase::initSettings()
 {
-    writeSettings(std::make_tuple("text" ,"txt,cpp,h"   ,"/bin/cat"          ,6));  // 6 helpers written to .conf file
+    writeSettings(std::make_tuple("text" ,"txt,cpp,h"   ,"/bin/cat"          ,6));  /// 6 helpers written to .conf file
     writeSettings(std::make_tuple("pdf"  ,"pdf"         ,"/usr/bin/pstotext" ,6));
     writeSettings(std::make_tuple("odt"  ,"odt,ods"     ,"/usr/bin/odt2txt"  ,6));
     writeSettings(std::make_tuple("image","jpg,jpeg,png","/usr/bin/iinfo -v" ,0));
@@ -349,23 +349,23 @@ void XDGSearch::ConfigurationBase::initSettings()
     writeSettings(std::make_tuple("video","mpg,avi,webm","/usr/bin/mediainfo",0));
 
     settings.beginGroup("global");
-    settings.setValue("askQuitConfirmation", false);    // will ask confirmation on quitting
+    settings.setValue("askQuitConfirmation", false);    /// will ask confirmation on quitting
     settings.endGroup();
 }
 
 const XDGSearch::helperType XDGSearch::ConfigurationBase::enqueryHelper(const std::string& h)
 {
-    XDGSearch::helperType retval;       // define an empty return value
+    XDGSearch::helperType retval;       /// define an empty return value
     settings.beginGroup("helpers");
-    bool b = settings.value(QString::fromStdString(h)).toBool();  // checks if the queried helper is enabled
-    if(b)         // if true then populate the retval tuple object
+    bool b = settings.value(QString::fromStdString(h)).toBool();  /// checks if the queried helper is enabled
+    if(b)         /// if true then populate the retval tuple object
     {
         settings.endGroup();
         settings.beginGroup(QString::fromStdString(h));
-        std::get<0>(retval) = h;
-        std::get<1>(retval) = settings.value("extension"  ).toString().toStdString();
-        std::get<2>(retval) = settings.value("commandline").toString().toStdString();
-        std::get<3>(retval) = settings.value("granularity").toInt();
+        std::get<HELPERNAME>(retval) = h;
+        std::get<EXTENSIONS>(retval) = settings.value("extension"  ).toString().toStdString();
+        std::get<COMMANDLINE>(retval) = settings.value("commandline").toString().toStdString();
+        std::get<GRANULARITY>(retval) = settings.value("granularity").toInt();
     }
     settings.endGroup();
     return retval;
@@ -373,16 +373,16 @@ const XDGSearch::helperType XDGSearch::ConfigurationBase::enqueryHelper(const st
 
 const XDGSearch::poolType XDGSearch::ConfigurationBase::enqueryPool()
 {
-    if(std::get<0>(pools).empty())      // useful if called for Settings type: none pool
+    if(std::get<XDGPOOLNAME>(pools).empty())      /// useful if called for Settings type: none pool
         return pools;
 
-    settings.beginGroup(QString::fromStdString(std::get<0>(pools)));
+    settings.beginGroup(QString::fromStdString(std::get<XDGPOOLNAME>(pools)));
 
-    std::get<1>(pools) = settings.value("localpoolname").toString().toStdString();  // query pool section items in .conf file
-    std::get<2>(pools) = settings.value("poolhelpers"  ).toString().toStdString();
-    std::get<3>(pools) = settings.value("pooldirpath"  ).toString().toStdString();
-    std::get<4>(pools) = settings.value("stemmed"      ).toString().toStdString();
-    std::get<5>(pools) = settings.value("stopwordsfile").toString().toStdString();
+    std::get<LOCALPOOLNAME>(pools) = settings.value("localpoolname").toString().toStdString();  /// query pool section items in .conf file
+    std::get<POOLHELPERS>(pools) = settings.value("poolhelpers"  ).toString().toStdString();
+    std::get<POOLDIRPATH>(pools) = settings.value("pooldirpath"  ).toString().toStdString();
+    std::get<STEMMING>(pools) = settings.value("stemmed"      ).toString().toStdString();
+    std::get<STOPWORDSFILE>(pools) = settings.value("stopwordsfile").toString().toStdString();
 
     settings.endGroup();
     return pools;
@@ -391,16 +391,16 @@ const XDGSearch::poolType XDGSearch::ConfigurationBase::enqueryPool()
 void XDGSearch::ConfigurationBase::removeHelper(const std::string& h)
 {
     settings.beginGroup("helpers");
-    settings.remove(QString::fromStdString(h));     // not rollback deletion of the given helper
+    settings.remove(QString::fromStdString(h));     /// not rollback deletion of the given helper
     settings.endGroup();
 
-    settings.remove(QString::fromStdString(h));     // not rollback deletion of the given helper
+    settings.remove(QString::fromStdString(h));     /// not rollback deletion of the given helper
 }
 
 bool XDGSearch::ConfigurationBase::askForConfirmation()
 {
     settings.beginGroup("global");
-    bool retval = settings.value("askQuitConfirmation", false).toBool();    // query quit confirmation, if not set return false
+    bool retval = settings.value("askQuitConfirmation", false).toBool();    /// query quit confirmation, if not set return false
     settings.endGroup();
     return retval;
 }
@@ -423,19 +423,19 @@ const QByteArray XDGSearch::ConfigurationBase::readMainWindowGeometry()
 void XDGSearch::ConfigurationBase::setAskForConfirmation(bool b)
 {
     settings.beginGroup("global");
-    settings.setValue("askQuitConfirmation", b);        // set quit confirmation
+    settings.setValue("askQuitConfirmation", b);        /// set quit confirmation
     settings.endGroup();
 }
 
 bool XDGSearch::ConfigurationBase::isPopulatedDB(const Pool& p)
 {
-    const std::string k = toXDGKey(p);      // convert to std::string the sought pool
+    const std::string k = toXDGKey(p);      /// convert to std::string the sought pool
     settings.beginGroup(QString::fromStdString(k));
-    const auto dbName = settings.value("localpoolname").toString();     // looks for the local pool name in .conf file
+    const auto dbName = settings.value("localpoolname").toString();     /// looks for the local pool name in .conf file
     settings.endGroup();
-    QDir d(dbName);     // try to open the directory of the database
+    QDir d(dbName);     /// try to open the directory of the database
 
-    return d.exists();  // return true if the directory exist
+    return d.exists();  /// return true if the directory exist
 }
 
 std::string XDGSearch::toXDGKey(const XDGSearch::Pool& p)
@@ -477,7 +477,7 @@ std::string XDGSearch::toXDGKey(const XDGSearch::Pool& p)
 QStringList XDGSearch::ConfigurationBase::getHelpersNameList()
 {
     settings.beginGroup("helpers");
-    const auto retval = settings.childKeys();   // retrieve the list of all helpers in .conf file
+    const auto retval = settings.childKeys();   /// retrieve the list of all helpers in .conf file
     settings.endGroup();
 
     return retval;
@@ -485,7 +485,7 @@ QStringList XDGSearch::ConfigurationBase::getHelpersNameList()
 
 void XDGSearch::ConfigurationBase::addHelperToPool(const std::string& h)
 {
-    if(!std::get<2>(pools).empty())
-        std::get<2>(pools) += ',';
-    std::get<2>(pools) += h;
+    if(!std::get<POOLHELPERS>(pools).empty())
+        std::get<POOLHELPERS>(pools) += ',';
+    std::get<POOLHELPERS>(pools) += h;
 }
