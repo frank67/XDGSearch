@@ -33,13 +33,13 @@ TEMPLATE = app
 LIBS     += -lQt5Core \
             -lQt5Gui \
             -lQt5Widgets \
-            -lxapian-1.3 \
+            -lxapian \
             -pthread
 
-INCLUDEPATH += /usr/include/xapian-1.3
+INCLUDEPATH += /usr/include/xapian
 
 # The application version
-VERSION = 0.11.3
+VERSION = 0.12.0
 
 # Defines the preprocessor macro to get the application version available in the application code
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
