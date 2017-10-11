@@ -44,7 +44,7 @@ friend class Indexer;
     void setProgressBarValue();     /// determines values useful for the progress bar
     void resetProgressBarValue();   /// sets values for the progress bar to its initial values
     double p_value, p_valueStep;    /// p_value: the value passed to setvalue member, p_valueStep: progress bar increment step
-    std::unique_ptr<XDGSearch::Configuration> conf;
+    std::unique_ptr<XDGSearch::Configuration> const conf;
     XDGSearch::poolType currentPoolSettings;
     std::string xdgKey, htmlResult;
 signals:
@@ -65,7 +65,7 @@ class XDGSearch::Indexer final : public QObject {
 public:
     Indexer(QObject*, const XDGSearch::Pool&);
     ~Indexer();
-    void populateDB() const         { return d ->populateDB(); }
+    void populateDB()         { return d ->populateDB(); }
     void seek(const std::string& s) { d ->seek(s); }
     std::string getResult() const   { return d ->htmlResult; }
 signals:

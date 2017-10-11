@@ -93,7 +93,7 @@ try {
         /// try to create the temporary database under /tmp
     Xapian::WritableDatabase* tmpDB(new Xapian::WritableDatabase( tmpDBName
                                                                 , Xapian::DB_CREATE
-                                                                , Xapian::DB_BACKEND_CHERT) );
+                                                                , Xapian::DB_BACKEND_GLASS) );
     for(std::string h; std::getline(iss, h, ','); /* null */)   /// for each helper in the stringstream object
         poolHelpers.push_front(conf ->enqueryHelper(h));        /// populate the container that holds items informations
 
@@ -107,7 +107,7 @@ try {
                                                                              , tmpDB) ));
     }
 
-    for(auto& t : helpersThread)
+    for(const auto& t : helpersThread)
     {
         p_value += p_valueStep;
         emit progressValue(p_value);
@@ -141,7 +141,7 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
     static std::unique_ptr<std::mutex> mtx1(new std::mutex);    /// defines mutex to grant mutually exclusive rights to the threads that write the database
     const std::string stopWordsFile = "./stopwords/" + std::get<STOPWORDSFILE>(currentPoolSettings);
 
-    Xapian::WritableDatabase inRamDB(Xapian::InMemory::open()); /// open the database that'll hold data
+    Xapian::WritableDatabase inRamDB(std::string(""), Xapian::DB_BACKEND_INMEMORY); /// open the database that'll hold data
     Xapian::Stem stemmer(std::get<STEMMING>(currentPoolSettings));
     Xapian::TermGenerator indexer;
     Xapian::SimpleStopper sstopper;

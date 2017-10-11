@@ -46,12 +46,12 @@ private slots:
     void on_stopwordsCBox_activated(int);
     void on_poolCBox_activated(const QString&);
 private:
-    Ui::Preferences *ui;
+    Ui::Preferences* const ui;
     QPushButton *buttonOk, *buttonApply;
     bool changesAlreadyApplied;
-    void fillPageInitValue();       /// initial value for combobox, list, fields
-    void refreshHelpersList();      /// read .conf file and update the list of helpers
-    XDGSearch::poolType collectWidgetValue(const XDGSearch::Configuration&);    /// read UI combobox, list, field storing each value into a tuple
+    void fillPageInitValue() const;       /// initial value for combobox, list, fields
+    void refreshHelpersList() const;      /// read .conf file and update the list of helpers
+    const XDGSearch::poolType collectWidgetValue(const XDGSearch::Configuration&);    /// read UI combobox, list, field storing each value into a tuple
 };
 
 #endif /// PREFERENCES_H

@@ -305,7 +305,7 @@ void Wizard::on_sourcesNoConfig_stateChanged(int s)
 
 void Wizard::on_Wizard_accepted()
 {   /// once accepted write configurations stored in confPool into the .conf file
-    XDGSearch::Configuration conf;  /// no pool provided to the constructor, Settings derivated class is used
+    const XDGSearch::Configuration conf;  /// no pool provided to the constructor, Settings derivated class is used
     for(const auto& p : confPools)
         conf.writeSettings(p);
 

@@ -34,7 +34,7 @@ class Helpers : public QDialog
 public:
     explicit Helpers(QWidget *parent = 0);
     ~Helpers();
-    QString getHelperName() const   { return selectedHelper; }
+    const QString getHelperName() const   { return selectedHelper; }
 private slots:
     void on_addHelper_clicked();    /// 2 slots invoked on button clicked
     void on_removeHelper_clicked();
@@ -52,8 +52,8 @@ private slots:
     void on_helpersList_currentItemChanged( QListWidgetItem *current
                                           , QListWidgetItem *previous );    /// slot invoked when selected a item in the list
 private:
-    Ui::Helpers *ui;
-    std::unique_ptr<XDGSearch::Configuration> conf;
+    Ui::Helpers* const ui;
+    std::unique_ptr<XDGSearch::Configuration> const conf;
     QString selectedHelper;
     QPushButton *buttonOk, *buttonApply;
     bool isNameAdding, granularityEdited;

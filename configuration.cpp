@@ -18,7 +18,6 @@
 
 #include "configuration.h"
 #include <fstream>
-#include <cstdio>
 #include <algorithm>
 #include <QDir>
 #include <QStringList>
@@ -71,7 +70,7 @@ XDGSearch::Configuration::Configuration(const XDGSearch::Pool& p = Pool::END)
 }
 
 /// overload prefix increment operator on XDGSearch::Pool type
-XDGSearch::Pool& XDGSearch::operator++(Pool& p)
+const XDGSearch::Pool& XDGSearch::operator++(Pool& p)
 {
         switch(p)       {
                 case Pool::DESKTOP     : return p = Pool::TEMPLATES;
@@ -89,8 +88,8 @@ XDGSearch::Pool& XDGSearch::operator++(Pool& p)
 
 void XDGSearch::cfgDesktop::defaultSettings(const std::string& XDGKeyword)
 {
-    auto p = getXDGKeysDirPath(XDGKeyword);
-    auto emptyP = std::make_pair(std::string(), std::string());
+    const auto p = getXDGKeysDirPath(XDGKeyword);
+    const auto emptyP = std::make_pair(std::string(), std::string());
     std::get<XDGPOOLNAME>(pools) = XDGKeyword;        /// assign the XDG key, e.g.: XDG_DESKTOP_DIR (see class ctor)
     if(p != emptyP) {
         std::get<LOCALPOOLNAME>(pools) = p.first;       /// assign localized pool name
@@ -108,8 +107,8 @@ void XDGSearch::cfgDesktop::defaultSettings(const std::string& XDGKeyword)
 
 void XDGSearch::cfgTemplates::defaultSettings(const std::string& XDGKeyword)
 {
-    auto p = getXDGKeysDirPath(XDGKeyword);
-    auto emptyP = std::make_pair(std::string(), std::string());
+    const auto p = getXDGKeysDirPath(XDGKeyword);
+    const auto emptyP = std::make_pair(std::string(), std::string());
     std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
         std::get<LOCALPOOLNAME>(pools) = p.first;
@@ -126,8 +125,8 @@ void XDGSearch::cfgTemplates::defaultSettings(const std::string& XDGKeyword)
 
 void XDGSearch::cfgPublicShare::defaultSettings(const std::string& XDGKeyword)
 {
-    auto p = getXDGKeysDirPath(XDGKeyword);
-    auto emptyP = std::make_pair(std::string(), std::string());
+    const auto p = getXDGKeysDirPath(XDGKeyword);
+    const auto emptyP = std::make_pair(std::string(), std::string());
     std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
         std::get<LOCALPOOLNAME>(pools) = p.first;
@@ -145,8 +144,8 @@ void XDGSearch::cfgPublicShare::defaultSettings(const std::string& XDGKeyword)
 
 void XDGSearch::cfgDocuments::defaultSettings(const std::string& XDGKeyword)
 {
-    auto p = getXDGKeysDirPath(XDGKeyword);
-    auto emptyP = std::make_pair(std::string(), std::string());
+    const auto p = getXDGKeysDirPath(XDGKeyword);
+    const auto emptyP = std::make_pair(std::string(), std::string());
     std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
         std::get<LOCALPOOLNAME>(pools) = p.first;
@@ -163,8 +162,8 @@ void XDGSearch::cfgDocuments::defaultSettings(const std::string& XDGKeyword)
 
 void XDGSearch::cfgMusic::defaultSettings(const std::string& XDGKeyword)
 {
-    auto p = getXDGKeysDirPath(XDGKeyword);
-    auto emptyP = std::make_pair(std::string(), std::string());
+    const auto p = getXDGKeysDirPath(XDGKeyword);
+    const auto emptyP = std::make_pair(std::string(), std::string());
     std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
         std::get<LOCALPOOLNAME>(pools) = p.first;
@@ -180,8 +179,8 @@ void XDGSearch::cfgMusic::defaultSettings(const std::string& XDGKeyword)
 
 void XDGSearch::cfgPictures::defaultSettings(const std::string& XDGKeyword)
 {
-    auto p = getXDGKeysDirPath(XDGKeyword);
-    auto emptyP = std::make_pair(std::string(), std::string());
+    const auto p = getXDGKeysDirPath(XDGKeyword);
+    const auto emptyP = std::make_pair(std::string(), std::string());
     std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
         std::get<LOCALPOOLNAME>(pools) = p.first;
@@ -197,8 +196,8 @@ void XDGSearch::cfgPictures::defaultSettings(const std::string& XDGKeyword)
 
 void XDGSearch::cfgVideos::defaultSettings(const std::string& XDGKeyword)
 {
-    auto p = getXDGKeysDirPath(XDGKeyword);
-    auto emptyP = std::make_pair(std::string(), std::string());
+    const auto p = getXDGKeysDirPath(XDGKeyword);
+    const auto emptyP = std::make_pair(std::string(), std::string());
     std::get<XDGPOOLNAME>(pools) = XDGKeyword;
     if(p != emptyP) {
         std::get<LOCALPOOLNAME>(pools) = p.first;
@@ -227,7 +226,7 @@ void XDGSearch::Settings::defaultSettings(const std::string& n = std::string())
     Q_UNUSED(n);
 
     settings.beginGroup("helpers");
-    auto keys = settings.childKeys();
+    const auto keys = settings.childKeys();
     settings.remove("");
     settings.endGroup();
 
@@ -293,21 +292,49 @@ const std::pair<std::string, std::string> XDGSearch::ConfigurationBase::getXDGKe
 
 bool XDGSearch::ConfigurationBase::isFirstRun()
 {
-    auto workingDir = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    const auto workingDir = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
 
-    QDir appDBDir;
+    const QDir appDBDir;
     appDBDir.mkpath(workingDir);
     appDBDir.setCurrent(workingDir);    /// !!! set the application working directory !!!
     if(appDBDir.mkdir("stopwords"))  {  /// true if not exist, make directory and populate merging stopwords files
-        QDirIterator dirIt("/usr/share/xapian-core/stopwords", QDir::Files);
-
-        while(dirIt.hasNext())  {
-            const std::string  fileFullPathName = dirIt.next().toStdString()
-                             , cmd = "cp "
-                                   + fileFullPathName
-                                   + " stopwords";
-            Q_UNUSED(std::system(cmd.c_str()));   /// invoke "cp /usr/share/xapian-core/stopwords/foo stopwords" command
-        }
+        std::ofstream sw_english;
+        sw_english.open("stopwords/english.list", std::ofstream::out | std::ofstream::app);
+        sw_english << "a" << "\n" <<
+                      "about" << "\n" <<
+                      "an" << "\n" <<
+                      "and" << "\n" <<
+                      "are" << "\n" <<
+                      "as" << "\n" <<
+                      "at" << "\n" <<
+                      "be" << "\n" <<
+                      "by" << "\n" <<
+                      "for" << "\n" <<
+                      "from" << "\n" <<
+                      "how" << "\n" <<
+                      "i" << "\n" <<
+                      "in" << "\n" <<
+                      "is" << "\n" <<
+                      "it" << "\n" <<
+                      "of" << "\n" <<
+                      "on" << "\n" <<
+                      "or" << "\n" <<
+                      "that" << "\n" <<
+                      "the" << "\n" <<
+                      "this" << "\n" <<
+                      "to" << "\n" <<
+                      "was" << "\n" <<
+                      "what" << "\n" <<
+                      "when" << "\n" <<
+                      "where" << "\n" <<
+                      "which" << "\n" <<
+                      "who" << "\n" <<
+                      "why" << "\n" <<
+                      "will" << "\n" <<
+                      "with" << "\n" <<
+                      "you" << "\n" <<
+                      "your" << "\n";
+        sw_english.close();
     }
     settings.beginGroup("global");      /// test is first run checking askQuitConfirmation key in xdgsearch.conf
     bool retval = settings.contains("askQuitConfirmation");
@@ -433,12 +460,12 @@ bool XDGSearch::ConfigurationBase::isPopulatedDB(const Pool& p)
     settings.beginGroup(QString::fromStdString(k));
     const auto dbName = settings.value("localpoolname").toString();     /// looks for the local pool name in .conf file
     settings.endGroup();
-    QDir d(dbName);     /// try to open the directory of the database
+    const QDir d(dbName);     /// try to open the directory of the database
 
     return d.exists();  /// return true if the directory exist
 }
 
-std::string XDGSearch::toXDGKey(const XDGSearch::Pool& p)
+const std::string XDGSearch::toXDGKey(const XDGSearch::Pool& p)
 {
     std::string retval;
     switch(p)       {

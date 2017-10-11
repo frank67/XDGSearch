@@ -84,11 +84,11 @@ void MainWindow::readMainWindowSizeAndPosition()
     }
 }
 
-void MainWindow::populateCBox()
+void MainWindow::populateCBox() const
 {   /// iteration that retrieves each local pool name and adds it to poolCBox
     for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
-        XDGSearch::Configuration conf(p);
-        auto pt = conf.enqueryPool();
+        const XDGSearch::Configuration conf(p);
+        const auto pt = conf.enqueryPool();
         if(!std::get<XDGSearch::LOCALPOOLNAME>(pt).empty())
             ui ->poolCBox ->addItem(QString::fromStdString(std::get<XDGSearch::LOCALPOOLNAME>(pt)), QVariant::fromValue(p));
     }
@@ -110,13 +110,13 @@ bool MainWindow::maybeQuit()
 
     bool retval = false;
     /// a dialog will be shown to ask for confirmation to close window
-    QMessageBox* mb = new QMessageBox(  QMessageBox::Question
+    QMessageBox* const mb = new QMessageBox(  QMessageBox::Question
                                       , QCoreApplication::applicationName()
                                       , QObject::trUtf8("Do you really want to quit?")
                                       , QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No
                                       , this);
     /// provide a checkBox into the dialog window, if clicked the dialog window won't be shown
-    QCheckBox* cb = new QCheckBox(QObject::trUtf8("Don't ask me again"), mb);
+    QCheckBox* const cb = new QCheckBox(QObject::trUtf8("Don't ask me again"), mb);
     mb ->setCheckBox(cb);
 
     if(mb ->exec() == QMessageBox::Yes)
@@ -266,7 +266,7 @@ void MainWindow::on_poolCBox_activated(int index)
     showSplashScreenText();
 }
 
-void MainWindow::showSplashScreenText()
+void MainWindow::showSplashScreenText() const
 {   /// shows helpful text in the resultPane ui widget
     std::ostringstream composeHTML;
     composeHTML  << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">" << "\n"

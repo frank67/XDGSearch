@@ -59,7 +59,7 @@ Preferences::~Preferences()
     delete ui;
 }
 
-void Preferences::fillPageInitValue()
+void Preferences::fillPageInitValue() const
 {
     const std::string stemLanguages = "none " + Xapian::Stem::get_available_languages();    /// retrieves all language's stem supported by XAPIAN
     std::istringstream iss(stemLanguages);
@@ -116,7 +116,7 @@ void Preferences::on_addHelper_clicked()
 
 void Preferences::on_removeHelper_clicked()
 {   /// allows the user to delete an helper from the list
-    QListWidgetItem* item = ui->helpersList->currentItem();
+    const QListWidgetItem* const item = ui->helpersList->currentItem();
     if( !item->isSelected() )   {   /// warns the user that a selection was necessary
         QMessageBox* mb = new QMessageBox(  QMessageBox::Warning
                                           , QCoreApplication::applicationName()
@@ -142,8 +142,8 @@ void Preferences::clicked_buttonBoxOk()
 {
     if(!changesAlreadyApplied)
     {
-        XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());    /// builds Configuration object using the current pool's poolCBox item
-        auto pt = collectWidgetValue(conf);     /// retrieves this window's fields value in order to save them into the .conf file
+        const XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());    /// builds Configuration object using the current pool's poolCBox item
+        const auto pt = collectWidgetValue(conf);     /// retrieves this window's fields value in order to save them into the .conf file
         conf.writeSettings(pt);
     }
     this->close();
@@ -151,15 +151,15 @@ void Preferences::clicked_buttonBoxOk()
 
 void Preferences::clicked_buttonBoxApply()
 {
-    XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());    /// builds Configuration object using the current pool's poolCBox item
-    auto pt = collectWidgetValue(conf); /// retrieves this window's fields value in order to save them into the .conf file
+    const XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());    /// builds Configuration object using the current pool's poolCBox item
+    const auto pt = collectWidgetValue(conf); /// retrieves this window's fields value in order to save them into the .conf file
     conf.writeSettings(pt);
 
     buttonOk->setEnabled(true);
     changesAlreadyApplied = true;
 }
 
-XDGSearch::poolType Preferences::collectWidgetValue(const XDGSearch::Configuration& cfg)
+const XDGSearch::poolType Preferences::collectWidgetValue(const XDGSearch::Configuration& cfg)
 {   /// retrieves this window's fields value in order to save them into the .conf file
     XDGSearch::poolType retval = cfg.enqueryPool();
     std::get<XDGSearch::POOLDIRPATH>(retval) = ui->poolDirName->text().toStdString();
@@ -193,7 +193,7 @@ void Preferences::on_poolCBox_activated(const QString& arg1)
 {   /// when the user choose an item of the comboBox then the window's fields will be updated
     Q_UNUSED(arg1)
     XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());
-    auto pt = conf.enqueryPool();
+    const auto pt = conf.enqueryPool();
 
     ui ->poolDirName->setText(QString::fromStdString(std::get<XDGSearch::POOLDIRPATH>(pt))); /// updates the directory name field
 
@@ -210,11 +210,11 @@ void Preferences::on_poolCBox_activated(const QString& arg1)
     buttonOk->setEnabled(true);    buttonApply->setEnabled(false);   changesAlreadyApplied = false;
 }
 
-void Preferences::refreshHelpersList()
+void Preferences::refreshHelpersList() const
 {   /// populates helperList widget with the selected item of the poolCBox ComboBox
     ui->helpersList->clear();
     XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());
-    auto pt = conf.enqueryPool();
+    const auto pt = conf.enqueryPool();
 
     std::istringstream iss(std::get<XDGSearch::POOLHELPERS>(pt));
     for(std::string s; std::getline(iss, s, ','); /* null */)

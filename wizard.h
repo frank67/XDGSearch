@@ -68,7 +68,7 @@ private:
     bool validatePage2();
     bool validatePage3();
     const QString chooseDirectoryDialog();
-    Ui::Wizard *ui;
+    Ui::Wizard* const ui;
     enum { WIZARDINTRO      /// assigns a name to each page id
          , WIZARDPAGE1
          , WIZARDPAGE2

@@ -34,7 +34,7 @@ enum class Pool {   DESKTOP             /// define an enum class to hold the XDG
                   , VIDEOS
                   , SOURCES
                   , END };
-Pool& operator++(Pool&);                /// declare prefix increment operator overloaded for the Pool type
+const Pool& operator++(Pool&);                /// declare prefix increment operator overloaded for the Pool type
 
 using poolType = std::tuple<  std::string       ///  0 XDGPoolName
                             , std::string       ///  1 localPoolName
@@ -63,7 +63,7 @@ enum {
     , GRANULARITY
 };
 
-std::string toXDGKey(const Pool&);              /// translate from Pool type item to string name key
+const std::string toXDGKey(const Pool&);              /// translate from Pool type item to string name key
 class Configuration;                    /// Interface class for configuration/settings  operation
 class ConfigurationBase;                /// "Cheshire Cat" implemention class for Configuration class
 class cfgDesktop;                       /// Specialized classes that inherit from ConfigurationBase to define its pure virtual funcion
