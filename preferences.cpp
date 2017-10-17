@@ -30,6 +30,10 @@ Preferences::Preferences(QWidget *parent) :
       QDialog(parent)
     , ui(new Ui::Preferences)
     , changesAlreadyApplied(false)
+    , conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration))
+    , isNameAdding(false)
+    , granularityEdited(false)
+    , newItemAdded(nullptr)
 {
     ui->setupUi(this);  /// prepares the UI
 
@@ -52,6 +56,14 @@ Preferences::Preferences(QWidget *parent) :
     QWidget::setTabOrder(ui->addHelper, ui->removeHelper);
     QWidget::setTabOrder(ui->removeHelper, ui->buttonBox);
     QWidget::setTabOrder(ui->buttonBox, ui->poolCBox);
+
+    refreshHelpersList();               /// shows a list of helpers
+    refreshallHelpersList();
+    /// define a tabbing path order, suitable for editing purpose
+    QWidget::setTabOrder(ui->helperName, ui->helperCmdLine);
+    QWidget::setTabOrder(ui->helperCmdLine, ui->helperFileExt);
+    QWidget::setTabOrder(ui->helperFileExt, ui->helperGranularity);
+    ui->tabWidget->setCurrentIndex(0);
 }
 
 Preferences::~Preferences()
@@ -104,10 +116,14 @@ void Preferences::on_poolDirButton_clicked()
 void Preferences::on_addHelper_clicked()
 {   /// allows the user to add an helper to the pool's helpers list
     Helpers hlp;
-    if(! (hlp.exec() == QDialog::Accepted) )    /// shows the Helpers dialog window
+    //if(! (hlp.exec() == QDialog::Accepted) )    /// shows the Helpers dialog window
+    //    return;
+
+    hlp.exec();
+    const QString helperToAdd = hlp.getHelperName();    /// OK was clicked therefore fetchs the helper's name
+    if(helperToAdd.isEmpty())
         return;
 
-    const QString helperToAdd = hlp.getHelperName();    /// OK was clicked therefore fetchs the helper's name
     if((ui->helpersList->findItems(helperToAdd, Qt::MatchFixedString)).empty()) /// findItems returns a QList if it is empty the helper wasn't already in the list
         ui->helpersList->addItem(helperToAdd);
 
@@ -140,23 +156,46 @@ void Preferences::clicked_buttonBoxCancel()
 
 void Preferences::clicked_buttonBoxOk()
 {
-    if(!changesAlreadyApplied)
+    if(ui->tabWidget->currentIndex() ==0)
     {
-        const XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());    /// builds Configuration object using the current pool's poolCBox item
-        const auto pt = collectWidgetValue(conf);     /// retrieves this window's fields value in order to save them into the .conf file
-        conf.writeSettings(pt);
+        if(!changesAlreadyApplied)
+        {
+            const XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());    /// builds Configuration object using the current pool's poolCBox item
+            const auto pt = collectWidgetValue(conf);     /// retrieves this window's fields value in order to save them into the .conf file
+            conf.writeSettings(pt);
+        }
+        this->close();
     }
-    this->close();
+    if(ui->tabWidget->currentIndex() ==1)
+    {
+        this->close();
+    }
 }
 
 void Preferences::clicked_buttonBoxApply()
 {
-    const XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());    /// builds Configuration object using the current pool's poolCBox item
-    const auto pt = collectWidgetValue(conf); /// retrieves this window's fields value in order to save them into the .conf file
-    conf.writeSettings(pt);
+    if(ui->tabWidget->currentIndex() ==0)
+    {
+        const XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());    /// builds Configuration object using the current pool's poolCBox item
+        const auto pt = collectWidgetValue(conf); /// retrieves this window's fields value in order to save them into the .conf file
+        conf.writeSettings(pt);
 
-    buttonOk->setEnabled(true);
-    changesAlreadyApplied = true;
+        buttonOk->setEnabled(true);
+        changesAlreadyApplied = true;
+    }
+    if(ui->tabWidget->currentIndex() ==1)
+    {
+        XDGSearch::helperType htItem;
+        std::get<XDGSearch::HELPERNAME>(htItem) = ui->helperName->text().toStdString();
+        std::get<XDGSearch::EXTENSIONS>(htItem) = ui->helperFileExt->text().toStdString();
+        std::get<XDGSearch::COMMANDLINE>(htItem) = ui->helperCmdLine->text().toStdString();
+        std::get<XDGSearch::GRANULARITY>(htItem) = ui->helperGranularity->value();
+
+        conf ->writeSettings(htItem);
+        buttonOk->setEnabled(true);
+        ui->allHelpersList->setEnabled(true);
+        buttonApply->setEnabled(false);
+    }
 }
 
 const XDGSearch::poolType Preferences::collectWidgetValue(const XDGSearch::Configuration& cfg)
@@ -221,4 +260,121 @@ void Preferences::refreshHelpersList() const
         ui->helpersList->addItem(QString::fromStdString(s));    /// adds items to the helpers list
 
     ui->helpersList->setCurrentRow(0);
+}
+
+void Preferences::refreshallHelpersList() const  /// retrieves helper's names from the .conf file then they'll be added to the allHelperList widget
+{
+    const QStringList helpersNameList = conf ->getHelpersNameList();
+
+    ui->allHelpersList->clearSelection();
+    ui->allHelpersList->clear();
+
+    for(const auto& s : helpersNameList)
+        ui->allHelpersList->addItem(s);
+}
+
+void Preferences::on_tabWidget_currentChanged(int index)
+{
+
+}
+
+void Preferences::on_helperName_editingFinished()
+{
+    if(isNameAdding)    {
+        isNameAdding = false;
+        newItemAdded = new QListWidgetItem;
+        newItemAdded->setText(ui->helperName->text());
+        ui->allHelpersList->addItem(newItemAdded);
+        ui->allHelpersList->setCurrentItem(newItemAdded);
+    }
+    if(ui->allHelpersList->currentItem())
+        ui->allHelpersList->currentItem()->setText(ui->helperName->text());
+    toggleWidgetOnEditing();
+}
+
+void Preferences::on_helperCmdLine_editingFinished()
+{
+    toggleWidgetOnEditing();
+}
+
+void Preferences::on_helperFileExt_editingFinished()
+{
+    toggleWidgetOnEditing();
+}
+
+void Preferences::on_helperGranularity_editingFinished()
+{
+    granularityEdited = true;
+    toggleWidgetOnEditing();
+}
+
+void Preferences::on_newHelper_clicked()    /// prepares the UI to add a provided by the user helper
+{
+    if(ui->helpersList->isEnabled())    {
+        ui->helpersList->setEnabled(false);
+        buttonOk->setEnabled(false);
+        buttonApply->setEnabled(false);
+        isNameAdding = true;
+        granularityEdited = false;
+
+        ui->helperName->setText(QString("<new>"));
+        ui->helperName->selectAll();        /// the text <new> is shown as selected
+        ui->helperName->setFocus();         /// move the focus to helperName so the user can start typing now
+        /// erase contents of 3 UI fields, the user shall fill them
+        ui->helperCmdLine->clear(); ui->helperFileExt->clear(); ui->helperGranularity->clear();
+    }
+}
+
+void Preferences::on_deleteHelper_clicked()     /// irreversibly erase selected helper
+{
+    if(  ui->allHelpersList->currentItem()->isSelected()
+      && ui->allHelpersList->isEnabled() )
+    {
+        conf ->removeHelper(ui->allHelpersList->currentItem()->text().toStdString());
+        ui->allHelpersList->takeItem(ui->allHelpersList->currentRow());
+    }
+}
+
+void Preferences::on_helperDefaults_clicked() /// restore initial helpers default setting
+{
+    conf ->defaultSettings("");
+    refreshallHelpersList();
+}
+
+void Preferences::toggleWidgetOnEditing()  /// when a field is edited accordingly sets buttons and list
+{
+    if(  !ui->helperName->text().isEmpty()
+      && !ui->helperCmdLine->text().isEmpty()
+      && !ui->helperFileExt->text().isEmpty()
+      && granularityEdited )
+    {
+        buttonApply->setEnabled(true);
+    }
+    else
+    {
+        buttonOk->setEnabled(false);
+        buttonApply->setEnabled(false);
+        granularityEdited = false;
+    }
+    ui->allHelpersList->setEnabled(false);
+}
+
+void Preferences::on_allHelpersList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    /// when current item changed retrieves helper's item values and assign them to the ui widgets
+     Q_UNUSED(previous)
+     XDGSearch::helperType htItem;
+
+     if(current)
+         htItem  = conf ->enqueryHelper(current->text().toStdString());
+
+     if(std::get<XDGSearch::HELPERNAME>(htItem).empty())
+         return;
+
+     ui->helperName->setText(QString::fromStdString(std::get<XDGSearch::HELPERNAME>(htItem)));
+     ui->helperFileExt->setText(QString::fromStdString(std::get<XDGSearch::EXTENSIONS>(htItem)));
+     ui->helperCmdLine->setText(QString::fromStdString(std::get<XDGSearch::COMMANDLINE>(htItem)));
+     ui->helperGranularity->setValue(std::get<XDGSearch::GRANULARITY>(htItem));
+     buttonOk->setEnabled(true);
+
 }

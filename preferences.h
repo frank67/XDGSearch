@@ -21,6 +21,7 @@
 
 #include <QDialog>
 #include <QPushButton>
+#include <QListWidgetItem>
 #include "configuration.h"
 
 namespace Ui {
@@ -45,6 +46,20 @@ private slots:
     void on_stemCBox_activated(int);        /// 3 slot invoked when ComboBox item selected
     void on_stopwordsCBox_activated(int);
     void on_poolCBox_activated(const QString&);
+
+    void on_tabWidget_currentChanged(int index);
+
+    void on_helperName_editingFinished();
+    void on_helperCmdLine_editingFinished();
+    void on_helperFileExt_editingFinished();
+    void on_helperGranularity_editingFinished();
+
+    void on_newHelper_clicked();
+    void on_deleteHelper_clicked();
+    void on_helperDefaults_clicked();
+
+    void on_allHelpersList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
+
 private:
     Ui::Preferences* const ui;
     QPushButton *buttonOk, *buttonApply;
@@ -52,6 +67,14 @@ private:
     void fillPageInitValue() const;       /// initial value for combobox, list, fields
     void refreshHelpersList() const;      /// read .conf file and update the list of helpers
     const XDGSearch::poolType collectWidgetValue(const XDGSearch::Configuration&);    /// read UI combobox, list, field storing each value into a tuple
+
+    std::unique_ptr<XDGSearch::Configuration> const conf;
+    QString selectedHelper;
+    bool isNameAdding, granularityEdited;
+    QListWidgetItem *newItemAdded;
+
+    void toggleWidgetOnEditing();
+    void refreshallHelpersList() const;
 };
 
 #endif /// PREFERENCES_H
