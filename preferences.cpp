@@ -9,7 +9,7 @@
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHAcurrentTabNumberILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
@@ -24,6 +24,7 @@
 #include <QDirIterator>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <iostream>
 
 
 Preferences::Preferences(QWidget *parent) :
@@ -33,7 +34,9 @@ Preferences::Preferences(QWidget *parent) :
     , conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration))
     , isNameAdding(false)
     , granularityEdited(false)
+    , isDialogWindowShown(false)
     , newItemAdded(nullptr)
+    , currentTabNumber(0)
 {
     ui->setupUi(this);  /// prepares the UI
 
@@ -57,13 +60,13 @@ Preferences::Preferences(QWidget *parent) :
     QWidget::setTabOrder(ui->removeHelper, ui->buttonBox);
     QWidget::setTabOrder(ui->buttonBox, ui->poolCBox);
 
-    refreshHelpersList();               /// shows a list of helpers
-    refreshallHelpersList();
+    //refreshHelpersList();               /// shows a list of helpers
+    //refreshallHelpersList();
     /// define a tabbing path order, suitable for editing purpose
     QWidget::setTabOrder(ui->helperName, ui->helperCmdLine);
     QWidget::setTabOrder(ui->helperCmdLine, ui->helperFileExt);
     QWidget::setTabOrder(ui->helperFileExt, ui->helperGranularity);
-    ui->tabWidget->setCurrentIndex(0);
+    ui->tabWidget->setCurrentIndex(currentTabNumber);
 }
 
 Preferences::~Preferences()
@@ -81,12 +84,14 @@ void Preferences::fillPageInitValue() const
     QDirIterator dirIt(QString("./stopwords"), QDir::Files, QDirIterator::NoIteratorFlags);
 
     ui ->stopwordsCBox->addItem("none");        /// adds "none" as first stopwordsCBox widget item
-    while(dirIt.hasNext())  {
+    while(dirIt.hasNext())
+    {
         dirIt.next();
         ui ->stopwordsCBox->addItem(dirIt.fileName());  /// populate the stopwordsCBox widget
     }
 
-    for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)   {
+    for(auto p = XDGSearch::Pool::DESKTOP; p != XDGSearch::Pool::END; ++p)
+    {
         XDGSearch::Configuration conf(p);
         auto pt = conf.enqueryPool();
         if(!std::get<XDGSearch::LOCALPOOLNAME>(pt).empty())
@@ -99,6 +104,8 @@ void Preferences::fillPageInitValue() const
             ui ->stopwordsCBox->setCurrentText(QString::fromStdString(std::get<XDGSearch::STOPWORDSFILE>(pt)));    /// populate with DESKTOP pool stopwords file
         }
     }
+    refreshallHelpersList();
+//    ui->helperName->clear();    ui->helperCmdLine->clear(); ui->helperFileExt->clear(); ui->helperGranularity->clear();
 }
 
 void Preferences::on_poolDirButton_clicked()
@@ -109,7 +116,7 @@ void Preferences::on_poolDirButton_clicked()
                             , QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks );
     if( !directory.isEmpty() )  {   /// if a directory was chosen from the previous dialog then updates widget
         ui ->poolDirName->setText(directory);
-        buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false;
+        buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false; currentTabNumber =0;
     }
 }
 
@@ -125,15 +132,20 @@ void Preferences::on_addHelper_clicked()
         return;
 
     if((ui->helpersList->findItems(helperToAdd, Qt::MatchFixedString)).empty()) /// findItems returns a QList if it is empty the helper wasn't already in the list
-        ui->helpersList->addItem(helperToAdd);
+    {
+        newItemAdded = new QListWidgetItem(helperToAdd);
+        ui->helpersList->addItem(newItemAdded);
+        ui->helpersList->setCurrentItem(newItemAdded);
+    }
 
-    buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false;
+    buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false; currentTabNumber =0;
 }
 
 void Preferences::on_removeHelper_clicked()
 {   /// allows the user to delete an helper from the list
     const QListWidgetItem* const item = ui->helpersList->currentItem();
-    if( !item->isSelected() )   {   /// warns the user that a selection was necessary
+    if( !item->isSelected() )   /// warns the user that a selection was necessary
+    {
         QMessageBox* mb = new QMessageBox(  QMessageBox::Warning
                                           , QCoreApplication::applicationName()
                                           , QObject::trUtf8("Please select an helper item in the list view.")
@@ -146,7 +158,7 @@ void Preferences::on_removeHelper_clicked()
         if(ui->helpersList->count() != 1)   /// avoids to empty all the list (at least one helper is necessary)
             ui->helpersList->takeItem(ui->helpersList->currentRow());
 
-    buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false;
+    buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false; currentTabNumber =0;
 }
 
 void Preferences::clicked_buttonBoxCancel()
@@ -181,6 +193,7 @@ void Preferences::clicked_buttonBoxApply()
         conf.writeSettings(pt);
 
         buttonOk->setEnabled(true);
+        buttonApply->setEnabled(false);
         changesAlreadyApplied = true;
     }
     if(ui->tabWidget->currentIndex() ==1)
@@ -219,13 +232,13 @@ const XDGSearch::poolType Preferences::collectWidgetValue(const XDGSearch::Confi
 void Preferences::on_stemCBox_activated(int index)
 {
     Q_UNUSED(index) /// QT's macro to avoid compiler warning: unused parameter
-    buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false;
+    buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false; currentTabNumber =0;
 }
 
 void Preferences::on_stopwordsCBox_activated(int index)
 {
     Q_UNUSED(index)
-    buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false;
+    buttonOk->setEnabled(false);    buttonApply->setEnabled(true);   changesAlreadyApplied = false; currentTabNumber =0;
 }
 
 void Preferences::on_poolCBox_activated(const QString& arg1)
@@ -246,7 +259,7 @@ void Preferences::on_poolCBox_activated(const QString& arg1)
     ui ->stemCBox->setCurrentText(QString::fromStdString(std::get<XDGSearch::STEMMING>(pt))); /// updates the stem ComboBox
     ui ->stopwordsCBox->setCurrentText(QString::fromStdString(std::get<XDGSearch::STOPWORDSFILE>(pt)));    /// updates the stopwords ComboBox
 
-    buttonOk->setEnabled(true);    buttonApply->setEnabled(false);   changesAlreadyApplied = false;
+    buttonOk->setEnabled(true);    buttonApply->setEnabled(false);   changesAlreadyApplied = false; currentTabNumber =0;
 }
 
 void Preferences::refreshHelpersList() const
@@ -275,7 +288,44 @@ void Preferences::refreshallHelpersList() const  /// retrieves helper's names fr
 
 void Preferences::on_tabWidget_currentChanged(int index)
 {
+    Q_UNUSED(index)
+    if(  buttonApply->isEnabled()
+      && !changesAlreadyApplied
+      && !isDialogWindowShown )
+    {
+        isDialogWindowShown = true;
+        buttonOk->setEnabled(false);
+        ui->tabWidget->setCurrentIndex(currentTabNumber);
+        QMessageBox* const msgBox = new QMessageBox(  QMessageBox::Question
+                                          , QCoreApplication::applicationName()
+                                          , QObject::trUtf8("This page has been modified.")
+                                          , QMessageBox::StandardButton::Save | QMessageBox::StandardButton::Discard | QMessageBox::StandardButton::Cancel
+                                          , this);
 
+        //msgBox->setText("This page has been modified.");
+        msgBox->setInformativeText("Do you want to save your changes?");
+        msgBox->setDefaultButton(QMessageBox::Save);
+        const int ret = msgBox->exec();
+        isDialogWindowShown = false;
+        switch (ret) {
+          case QMessageBox::Save:
+              // Save was clicked
+            buttonApply->clicked();
+              break;
+          case QMessageBox::Discard:
+              // Don't Save was clicked
+            fillPageInitValue();
+            buttonApply->setEnabled(false);
+              break;
+          case QMessageBox::Cancel:
+              // Cancel was clicked
+              break;
+          default:
+              // should never be reached
+              break;
+        }
+        delete msgBox;
+    }
 }
 
 void Preferences::on_helperName_editingFinished()
@@ -310,8 +360,8 @@ void Preferences::on_helperGranularity_editingFinished()
 
 void Preferences::on_newHelper_clicked()    /// prepares the UI to add a provided by the user helper
 {
-    if(ui->helpersList->isEnabled())    {
-        ui->helpersList->setEnabled(false);
+    if(ui->allHelpersList->isEnabled())    {
+        ui->allHelpersList->setEnabled(false);
         buttonOk->setEnabled(false);
         buttonApply->setEnabled(false);
         isNameAdding = true;
@@ -321,7 +371,7 @@ void Preferences::on_newHelper_clicked()    /// prepares the UI to add a provide
         ui->helperName->selectAll();        /// the text <new> is shown as selected
         ui->helperName->setFocus();         /// move the focus to helperName so the user can start typing now
         /// erase contents of 3 UI fields, the user shall fill them
-        ui->helperCmdLine->clear(); ui->helperFileExt->clear(); ui->helperGranularity->clear();
+        ui->helperCmdLine->clear(); ui->helperFileExt->clear(); ui->helperGranularity->clear(); currentTabNumber =1;
     }
 }
 
@@ -356,7 +406,8 @@ void Preferences::toggleWidgetOnEditing()  /// when a field is edited accordingl
         buttonApply->setEnabled(false);
         granularityEdited = false;
     }
-    ui->allHelpersList->setEnabled(false);
+    //ui->allHelpersList->setEnabled(false);
+    currentTabNumber =1;
 }
 
 void Preferences::on_allHelpersList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)

@@ -70,8 +70,9 @@ private:
 
     std::unique_ptr<XDGSearch::Configuration> const conf;
     QString selectedHelper;
-    bool isNameAdding, granularityEdited;
+    bool isNameAdding, granularityEdited, isDialogWindowShown;
     QListWidgetItem *newItemAdded;
+    int currentTabNumber;
 
     void toggleWidgetOnEditing();
     void refreshallHelpersList() const;
