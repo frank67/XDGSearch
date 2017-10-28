@@ -24,7 +24,6 @@
 #include <QDirIterator>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <iostream>
 
 
 Preferences::Preferences(QWidget *parent) :
@@ -33,7 +32,6 @@ Preferences::Preferences(QWidget *parent) :
     , changesAlreadyApplied(false)
     , conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration))
     , isNameAdding(false)
-    , granularityEdited(false)
     , isDialogWindowShown(false)
     , newItemAdded(nullptr)
     , currentTabNumber(0)
@@ -60,8 +58,6 @@ Preferences::Preferences(QWidget *parent) :
     QWidget::setTabOrder(ui->removeHelper, ui->buttonBox);
     QWidget::setTabOrder(ui->buttonBox, ui->poolCBox);
 
-    //refreshHelpersList();               /// shows a list of helpers
-    //refreshallHelpersList();
     /// define a tabbing path order, suitable for editing purpose
     QWidget::setTabOrder(ui->helperName, ui->helperCmdLine);
     QWidget::setTabOrder(ui->helperCmdLine, ui->helperFileExt);
@@ -105,7 +101,6 @@ void Preferences::fillPageInitValue() const
         }
     }
     refreshallHelpersList();
-//    ui->helperName->clear();    ui->helperCmdLine->clear(); ui->helperFileExt->clear(); ui->helperGranularity->clear();
 }
 
 void Preferences::on_poolDirButton_clicked()
@@ -123,9 +118,6 @@ void Preferences::on_poolDirButton_clicked()
 void Preferences::on_addHelper_clicked()
 {   /// allows the user to add an helper to the pool's helpers list
     Helpers hlp;
-    //if(! (hlp.exec() == QDialog::Accepted) )    /// shows the Helpers dialog window
-    //    return;
-
     hlp.exec();
     const QString helperToAdd = hlp.getHelperName();    /// OK was clicked therefore fetchs the helper's name
     if(helperToAdd.isEmpty())
@@ -191,9 +183,6 @@ void Preferences::clicked_buttonBoxApply()
         const XDGSearch::Configuration conf(ui->poolCBox->currentData().value<XDGSearch::Pool>());    /// builds Configuration object using the current pool's poolCBox item
         const auto pt = collectWidgetValue(conf); /// retrieves this window's fields value in order to save them into the .conf file
         conf.writeSettings(pt);
-
-        buttonOk->setEnabled(true);
-        buttonApply->setEnabled(false);
         changesAlreadyApplied = true;
     }
     if(ui->tabWidget->currentIndex() ==1)
@@ -205,10 +194,10 @@ void Preferences::clicked_buttonBoxApply()
         std::get<XDGSearch::GRANULARITY>(htItem) = ui->helperGranularity->value();
 
         conf ->writeSettings(htItem);
-        buttonOk->setEnabled(true);
         ui->allHelpersList->setEnabled(true);
-        buttonApply->setEnabled(false);
     }
+    buttonOk->setEnabled(true);
+    buttonApply->setEnabled(false);
 }
 
 const XDGSearch::poolType Preferences::collectWidgetValue(const XDGSearch::Configuration& cfg)
@@ -281,6 +270,7 @@ void Preferences::refreshallHelpersList() const  /// retrieves helper's names fr
 
     ui->allHelpersList->clearSelection();
     ui->allHelpersList->clear();
+    ui->allHelpersList->setEnabled(true);
 
     for(const auto& s : helpersNameList)
         ui->allHelpersList->addItem(s);
@@ -302,7 +292,6 @@ void Preferences::on_tabWidget_currentChanged(int index)
                                           , QMessageBox::StandardButton::Save | QMessageBox::StandardButton::Discard | QMessageBox::StandardButton::Cancel
                                           , this);
 
-        //msgBox->setText("This page has been modified.");
         msgBox->setInformativeText("Do you want to save your changes?");
         msgBox->setDefaultButton(QMessageBox::Save);
         const int ret = msgBox->exec();
@@ -339,23 +328,27 @@ void Preferences::on_helperName_editingFinished()
     }
     if(ui->allHelpersList->currentItem())
         ui->allHelpersList->currentItem()->setText(ui->helperName->text());
-    toggleWidgetOnEditing();
+    if(ui->helperName->isModified())
+        toggleWidgetOnEditing();
 }
 
 void Preferences::on_helperCmdLine_editingFinished()
 {
-    toggleWidgetOnEditing();
+    if(ui->helperCmdLine->isModified())
+        toggleWidgetOnEditing();
 }
 
 void Preferences::on_helperFileExt_editingFinished()
 {
-    toggleWidgetOnEditing();
+    if(ui->helperFileExt->isModified())
+        toggleWidgetOnEditing();
 }
 
-void Preferences::on_helperGranularity_editingFinished()
+void Preferences::on_helperGranularity_valueChanged(int arg1)
 {
-    granularityEdited = true;
-    toggleWidgetOnEditing();
+    Q_UNUSED(arg1)
+    if(ui->helperGranularity->hasFocus())
+        toggleWidgetOnEditing();
 }
 
 void Preferences::on_newHelper_clicked()    /// prepares the UI to add a provided by the user helper
@@ -365,13 +358,12 @@ void Preferences::on_newHelper_clicked()    /// prepares the UI to add a provide
         buttonOk->setEnabled(false);
         buttonApply->setEnabled(false);
         isNameAdding = true;
-        granularityEdited = false;
 
         ui->helperName->setText(QString("<new>"));
         ui->helperName->selectAll();        /// the text <new> is shown as selected
         ui->helperName->setFocus();         /// move the focus to helperName so the user can start typing now
         /// erase contents of 3 UI fields, the user shall fill them
-        ui->helperCmdLine->clear(); ui->helperFileExt->clear(); ui->helperGranularity->clear(); currentTabNumber =1;
+        ui->helperCmdLine->clear(); ui->helperFileExt->clear(); ui->helperGranularity->setValue(0); currentTabNumber =1;
     }
 }
 
@@ -389,24 +381,21 @@ void Preferences::on_helperDefaults_clicked() /// restore initial helpers defaul
 {
     conf ->defaultSettings("");
     refreshallHelpersList();
+    buttonOk->setEnabled(true);
+    buttonApply->setEnabled(false);
 }
 
 void Preferences::toggleWidgetOnEditing()  /// when a field is edited accordingly sets buttons and list
 {
     if(  !ui->helperName->text().isEmpty()
       && !ui->helperCmdLine->text().isEmpty()
-      && !ui->helperFileExt->text().isEmpty()
-      && granularityEdited )
-    {
+      && !ui->helperFileExt->text().isEmpty() )
         buttonApply->setEnabled(true);
-    }
     else
-    {
-        buttonOk->setEnabled(false);
         buttonApply->setEnabled(false);
-        granularityEdited = false;
-    }
-    //ui->allHelpersList->setEnabled(false);
+
+    buttonOk->setEnabled(false);
+    ui->allHelpersList->setEnabled(false);
     currentTabNumber =1;
 }
 
@@ -426,6 +415,4 @@ void Preferences::on_allHelpersList_currentItemChanged(QListWidgetItem *current,
      ui->helperFileExt->setText(QString::fromStdString(std::get<XDGSearch::EXTENSIONS>(htItem)));
      ui->helperCmdLine->setText(QString::fromStdString(std::get<XDGSearch::COMMANDLINE>(htItem)));
      ui->helperGranularity->setValue(std::get<XDGSearch::GRANULARITY>(htItem));
-     buttonOk->setEnabled(true);
-
 }

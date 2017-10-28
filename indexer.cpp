@@ -201,7 +201,7 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
                 if (iss.eof() || linescounter == 15) {
 
                     if(iss.eof())   {   /// if the eof is reached before the 15° line
-                        para += ' ';
+                        para += '\n';
                         para += line;
                     }
 
@@ -217,7 +217,7 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
 
                 } else {
                     if(!para.empty())
-                        para += ' ';    /// if not empty then adds a single space
+                        para += '\n';    /// if not empty then adds a new line
 
                     para += line;       /// adds the line to the paragraph
                     ++linescounter;     /// increment the counter
@@ -226,12 +226,13 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
                 if (iss.eof() || linescounter == maxLinesCounted) {
 
                     if(iss.eof())   {
-                        para += ' ';
+                        para += '\n';
                         para += line;
                     }
 
                     Xapian::Document doc;
                     doc.set_data(para);
+                    std::cout << para << std::endl;
                     doc.add_term("P" + fileFullPathName);
 
                     indexer.set_document(doc);
@@ -243,7 +244,7 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
 
                 } else {
                     if(!para.empty())
-                        para += ' ';
+                        para += '\n';
 
                     para += line;
                     ++linescounter;
@@ -318,7 +319,8 @@ try {
                 /// the iterator now points to the fully qualified file name that holds the document
                 std::istringstream iss(*term_iterator);
                 std::string   linkName
-                            , linkPath;
+                            , linkPath
+                            , paragraphDocument;
                 while(std::getline(iss, linkName, '/')) /// iteration in order to achieve the file URI e.g.:
                     if(linkName == "P")                 /// "file:///foo/bar/baz.pdf" and the file name e.g.:
                         linkPath = "file://";           /// "baz.pdf" both useful when compose the HTML formatted answer to the query
@@ -332,9 +334,11 @@ try {
                 for( std::string term
                    ; iss >> term
                    ; /* null */)
+                {
                     for( int pos = documentText.indexOf(QString::fromStdString(term), 0, Qt::CaseInsensitive)
                        ; pos != -1
-                       ; /* null */)   {
+                       ; /* null */)
+                    {
                         documentText.insert(pos, "<span style=\" font-weight:600;\">"); /// add bold effect syntax
                         pos = documentText.indexOf( QString::fromStdString(term)
                                                   , pos
@@ -346,7 +350,14 @@ try {
                                                   , pos
                                                   , Qt::CaseInsensitive);   /// looks for term again, if not found pos == -1 therefore quitting this loop
                     }
-
+                }
+                iss.clear();
+                iss.str(documentText.toStdString());
+                for(std::string line; std::getline(iss, line); /* null */)
+                {
+                    paragraphDocument += "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">"
+                                      + line + "</p>";
+                }
                 composeHTML << "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href="
                 /// surrounds linkPath with quotation marks so it'll be legal also if it contains white spaces
                             << "\"" << linkPath << "\""
@@ -354,7 +365,7 @@ try {
                             << linkName
                             << "</span></a></p>";
                 composeHTML << "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">"
-                            << documentText.toStdString()
+                            << paragraphDocument
                             << "</p>\n"
                             << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
                             << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n";

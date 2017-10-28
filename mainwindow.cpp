@@ -246,7 +246,7 @@ void MainWindow::on_actionAbout_triggered()
                         + title
                         + "</span></p><p>Based on QT "
                         + QT_VERSION_STR
-                        + "</p><p>Copyright &copy; 2016 Franco Martelli All rights reserved.</p>"
+                        + "</p><p>Copyright &copy; 2016,2017 Franco Martelli All rights reserved.</p>"
                         + "<p>The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE."
                         + "</p></body></html>";
 

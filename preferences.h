@@ -52,13 +52,14 @@ private slots:
     void on_helperName_editingFinished();
     void on_helperCmdLine_editingFinished();
     void on_helperFileExt_editingFinished();
-    void on_helperGranularity_editingFinished();
 
     void on_newHelper_clicked();
     void on_deleteHelper_clicked();
     void on_helperDefaults_clicked();
 
     void on_allHelpersList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
+
+    void on_helperGranularity_valueChanged(int arg1);
 
 private:
     Ui::Preferences* const ui;
@@ -70,7 +71,7 @@ private:
 
     std::unique_ptr<XDGSearch::Configuration> const conf;
     QString selectedHelper;
-    bool isNameAdding, granularityEdited, isDialogWindowShown;
+    bool isNameAdding, isDialogWindowShown;
     QListWidgetItem *newItemAdded;
     int currentTabNumber;
 

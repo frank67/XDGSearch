@@ -23,8 +23,8 @@
 Helpers::Helpers(QWidget *parent) :
       QDialog(parent)
     , ui(new Ui::Helpers)
-    , selectedHelper("")
     , conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration))
+    , selectedHelper("")
 {
     ui->setupUi(this);  /// prepares the UI
     buttonOk = ui->buttonBox->button(QDialogButtonBox::Ok);     /// bind a pointer to buttonbox OK button
@@ -33,6 +33,7 @@ Helpers::Helpers(QWidget *parent) :
     QObject::connect(ui->buttonBox->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), SLOT(clicked_buttonBoxCancel()));
     QObject::connect(buttonOk, SIGNAL(clicked()), SLOT(clicked_buttonBoxOk()));
 
+    buttonOk->setText(QString(QObject::trUtf8("Select")));
     buttonOk->setEnabled(false);        /// shows a disabled button
 
     refreshHelpersList();               /// shows a list of helpers
