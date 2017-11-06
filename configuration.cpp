@@ -1,6 +1,6 @@
 ﻿/* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016  Franco Martelli
+    Copyright (C) 2016,2017  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,18 +88,7 @@ const XDGSearch::Pool& XDGSearch::operator++(Pool& p)
 
 void XDGSearch::cfgDesktop::defaultSettings(const std::string& XDGKeyword)
 {
-    const auto p = getXDGKeysDirPath(XDGKeyword);
-    const auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<XDGPOOLNAME>(pools) = XDGKeyword;        /// assign the XDG key, e.g.: XDG_DESKTOP_DIR (see class ctor)
-    if(p != emptyP) {
-        std::get<LOCALPOOLNAME>(pools) = p.first;       /// assign localized pool name
-        std::get<POOLDIRPATH>(pools) = p.second;      /// assign XDG directory full path name
-    }
-    else {
-        std::get<LOCALPOOLNAME>(pools) = "Desktop";     /// if getXDGKeysDirPath fails provide a default name for the pool
-    }
-    std::get<STEMMING>(pools) = "none";            /// set stem language to "none"
-    std::get<STOPWORDSFILE>(pools) = "none";            /// set stopwords file value to none
+    defaultSettingsCommonCode(XDGKeyword, "Desktop");
     addHelperToPool("odt");                 /// default helper(s) for this pool
     addHelperToPool("image");
     addHelperToPool("pdf");
@@ -107,36 +96,14 @@ void XDGSearch::cfgDesktop::defaultSettings(const std::string& XDGKeyword)
 
 void XDGSearch::cfgTemplates::defaultSettings(const std::string& XDGKeyword)
 {
-    const auto p = getXDGKeysDirPath(XDGKeyword);
-    const auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
-    if(p != emptyP) {
-        std::get<LOCALPOOLNAME>(pools) = p.first;
-        std::get<POOLDIRPATH>(pools) = p.second;
-    }
-    else {
-        std::get<LOCALPOOLNAME>(pools) = "Templates";
-    }
-    std::get<STEMMING>(pools) = "none";
-    std::get<STOPWORDSFILE>(pools) = "none";
+    defaultSettingsCommonCode(XDGKeyword, "Templates");
     addHelperToPool("odt");
     addHelperToPool("text");
 }
 
 void XDGSearch::cfgPublicShare::defaultSettings(const std::string& XDGKeyword)
 {
-    const auto p = getXDGKeysDirPath(XDGKeyword);
-    const auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
-    if(p != emptyP) {
-        std::get<LOCALPOOLNAME>(pools) = p.first;
-        std::get<POOLDIRPATH>(pools) = p.second;
-    }
-    else {
-        std::get<LOCALPOOLNAME>(pools) = "PublicShare";
-    }
-    std::get<STEMMING>(pools) = "none";
-    std::get<STOPWORDSFILE>(pools) = "none";
+    defaultSettingsCommonCode(XDGKeyword, "PublicShare");
     addHelperToPool("odt");
     addHelperToPool("image");
     addHelperToPool("pdf");
@@ -144,70 +111,26 @@ void XDGSearch::cfgPublicShare::defaultSettings(const std::string& XDGKeyword)
 
 void XDGSearch::cfgDocuments::defaultSettings(const std::string& XDGKeyword)
 {
-    const auto p = getXDGKeysDirPath(XDGKeyword);
-    const auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
-    if(p != emptyP) {
-        std::get<LOCALPOOLNAME>(pools) = p.first;
-        std::get<POOLDIRPATH>(pools) = p.second;
-    }
-    else {
-        std::get<LOCALPOOLNAME>(pools) = "Documents";
-    }
-    std::get<STEMMING>(pools) = "none";
-    std::get<STOPWORDSFILE>(pools) = "none";
+    defaultSettingsCommonCode(XDGKeyword, "Documents");
     addHelperToPool("odt");
     addHelperToPool("pdf");
 }
 
 void XDGSearch::cfgMusic::defaultSettings(const std::string& XDGKeyword)
 {
-    const auto p = getXDGKeysDirPath(XDGKeyword);
-    const auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
-    if(p != emptyP) {
-        std::get<LOCALPOOLNAME>(pools) = p.first;
-        std::get<POOLDIRPATH>(pools) = p.second;
-    }
-    else {
-        std::get<LOCALPOOLNAME>(pools) = "Music";
-    }
-    std::get<STEMMING>(pools) = "none";
-    std::get<STOPWORDSFILE>(pools) = "none";
+    defaultSettingsCommonCode(XDGKeyword, "Music");
     addHelperToPool("music");
 }
 
 void XDGSearch::cfgPictures::defaultSettings(const std::string& XDGKeyword)
 {
-    const auto p = getXDGKeysDirPath(XDGKeyword);
-    const auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
-    if(p != emptyP) {
-        std::get<LOCALPOOLNAME>(pools) = p.first;
-        std::get<POOLDIRPATH>(pools) = p.second;
-    }
-    else {
-        std::get<LOCALPOOLNAME>(pools) = "Pictures";
-    }
-    std::get<STEMMING>(pools) = "none";
-    std::get<STOPWORDSFILE>(pools) = "none";
+    defaultSettingsCommonCode(XDGKeyword, "Pictures");
     addHelperToPool("image");
 }
 
 void XDGSearch::cfgVideos::defaultSettings(const std::string& XDGKeyword)
 {
-    const auto p = getXDGKeysDirPath(XDGKeyword);
-    const auto emptyP = std::make_pair(std::string(), std::string());
-    std::get<XDGPOOLNAME>(pools) = XDGKeyword;
-    if(p != emptyP) {
-        std::get<LOCALPOOLNAME>(pools) = p.first;
-        std::get<POOLDIRPATH>(pools) = p.second;
-    }
-    else {
-        std::get<LOCALPOOLNAME>(pools) = "Videos";
-    }
-    std::get<STEMMING>(pools) = "none";
-    std::get<STOPWORDSFILE>(pools) = "none";
+    defaultSettingsCommonCode(XDGKeyword, "Videos");
     addHelperToPool("media");
 }
 
@@ -238,7 +161,22 @@ void XDGSearch::Settings::defaultSettings(const std::string& n = std::string())
     settings.endGroup();
 
     initSettings();
+}
 
+void XDGSearch::ConfigurationBase::defaultSettingsCommonCode(const std::string& XDGKeyword, const std::string& defaultName)
+{
+    const auto p = getXDGKeysDirPath(XDGKeyword);
+    const auto emptyP = std::make_pair(std::string(), std::string());
+    std::get<XDGPOOLNAME>(pools) = XDGKeyword;        /// assign the XDG key, e.g.: XDG_DESKTOP_DIR (see class ctor)
+    if(p != emptyP) {
+        std::get<LOCALPOOLNAME>(pools) = p.first;       /// assign localized pool name
+        std::get<POOLDIRPATH>(pools) = p.second;      /// assign XDG directory full path name
+    }
+    else {
+        std::get<LOCALPOOLNAME>(pools) = defaultName;     /// if getXDGKeysDirPath fails provide a default name for the pool
+    }
+    std::get<STEMMING>(pools) = "none";            /// set stem language to "none"
+    std::get<STOPWORDSFILE>(pools) = "none";            /// set stopwords file value to none
 }
 
 const std::pair<std::string, std::string> XDGSearch::ConfigurationBase::getXDGKeysDirPath(const std::string& XDGKey)

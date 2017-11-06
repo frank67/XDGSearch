@@ -1,6 +1,6 @@
 /* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016  Franco Martelli
+    Copyright (C) 2016,2017  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,10 +31,10 @@
 
 
 XDGSearch::IndexerBase::IndexerBase(QObject* parent, const Pool& p) :    /// initializes conf member with a Configuration object of Pool p type
-        QObject(parent),
-        p_value(9.0),
-        p_valueStep(0.),
-        conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration(p)))
+          QObject(parent)
+        , p_value(9.0)
+        , p_valueStep(0.)
+        , conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration(p)))
 {
     currentPoolSettings = conf ->enqueryPool(); /// retrieves settings of the current pool type
 }
@@ -232,7 +232,6 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
 
                     Xapian::Document doc;
                     doc.set_data(para);
-                    std::cout << para << std::endl;
                     doc.add_term("P" + fileFullPathName);
 
                     indexer.set_document(doc);
@@ -271,7 +270,7 @@ const Xapian::MSet XDGSearch::IndexerBase::enqueryDB(const std::string& query_st
 {
 try {
     /// Open the database for searching.
-    Xapian::Database db(std::get<1>(currentPoolSettings));
+    Xapian::Database db(std::get<LOCALPOOLNAME>(currentPoolSettings));
 
     /// Start an enquire session.
     Xapian::Enquire enquire(db);

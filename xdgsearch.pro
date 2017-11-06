@@ -1,6 +1,6 @@
 # XDGSearch is a XAPIAN based file indexer and search tool.
 #
-#    Copyright (C) 2016  Franco Martelli
+#    Copyright (C) 2016,2017  Franco Martelli
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #
 #-------------------------------------------------
 
+INCLUDEPATH += /usr/include/xapian
 QT      += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -36,10 +37,8 @@ LIBS     += -lQt5Core \
             -lxapian \
             -pthread
 
-INCLUDEPATH += /usr/include/xapian
-
 # The application version
-VERSION = 0.15.2
+VERSION = 0.15.3
 
 # Defines the preprocessor macro to get the application version available in the application code
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"

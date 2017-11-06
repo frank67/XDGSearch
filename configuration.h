@@ -1,6 +1,6 @@
 /* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016  Franco Martelli
+    Copyright (C) 2016,2017  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,6 +101,7 @@ protected:
     const std::pair<std::string, std::string> getXDGKeysDirPath(const std::string&);    /// retrive the XDG directory path by quering a key in the home directory XDG configuration file
     void addHelperToPool(const std::string&);               /// add specified helper to private pools tuple object defined in this class
     void initSettings();                                    /// restore default settings
+    void defaultSettingsCommonCode(const std::string&, const std::string&);
     poolType pools;
     QSettings settings;
 };
