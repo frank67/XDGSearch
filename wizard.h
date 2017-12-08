@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef WIZARD_H
-#define WIZARD_H
+#ifndef XDGSEARCH_INCLUDED_WIZARD_H
+#define XDGSEARCH_INCLUDED_WIZARD_H
 
 #include <QWizard>
 #include <sstream>

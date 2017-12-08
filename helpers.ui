@@ -73,7 +73,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Choose an helpers:</string>
+    <string>Choose an helper:</string>
    </property>
   </widget>
  </widget>

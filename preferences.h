@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PREFERENCES_H
-#define PREFERENCES_H
+#ifndef XDGSEARCH_INCLUDED_PREFERENCES_H
+#define XDGSEARCH_INCLUDED_PREFERENCES_H
 
 #include <QDialog>
 #include <QPushButton>

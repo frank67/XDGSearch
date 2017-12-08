@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CONFIGURATION
-#define CONFIGURATION
+#ifndef XDGSEARCH_INCLUDED_CONFIGURATION_H
+#define XDGSEARCH_INCLUDED_CONFIGURATION_H
 
 #include <memory>
 #include <utility>
@@ -57,10 +57,10 @@ using helperType = std::tuple<std::string       ///  0 helper name
                             , std::string       ///  2 command line
                             , unsigned int>;    ///  3 granularity
 enum {
-      HELPERNAME
-    , EXTENSIONS
-    , COMMANDLINE
-    , GRANULARITY
+      HELPERNAME    /// the name of the helper
+    , EXTENSIONS    /// comma separated list of extensions
+    , COMMANDLINE   /// the command name to run
+    , GRANULARITY   /// number of lines length of a document, 0 means documents length of 15 lines
 };
 
 const std::string toXDGKey(const Pool&);              /// translate from Pool type item to string name key

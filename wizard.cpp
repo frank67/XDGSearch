@@ -272,7 +272,7 @@ void Wizard::fillPage3Widget()
                 <<  ui ->sourcesDir->text().toStdString()   << "\"";
         confPools.push_front(std::make_tuple( "XDG_SOURCES_DIR"
                                             , "Sources"
-                                            , "text"
+                                            , "code"
                                             , ui ->sourcesDir->text().toStdString()
                                             , "none"
                                             , "none" ));

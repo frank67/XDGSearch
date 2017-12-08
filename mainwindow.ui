@@ -42,6 +42,9 @@
       <property name="acceptDrops">
        <bool>true</bool>
       </property>
+      <property name="toolTip">
+       <string>result pane</string>
+      </property>
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOn</enum>
       </property>
@@ -85,6 +88,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="toolTip">
+         <string>selects a pool</string>
+        </property>
        </widget>
       </item>
       <item>
@@ -94,6 +100,9 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>please type the word(s) to search then press return</string>
         </property>
         <property name="frame">
          <bool>false</bool>
@@ -110,6 +119,9 @@
        <widget class="QToolButton" name="menuButton">
         <property name="contextMenuPolicy">
          <enum>Qt::ActionsContextMenu</enum>
+        </property>
+        <property name="toolTip">
+         <string>popup menu</string>
         </property>
         <property name="text">
          <string/>

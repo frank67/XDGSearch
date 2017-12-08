@@ -191,7 +191,7 @@ void Preferences::clicked_buttonBoxApply()
         std::get<XDGSearch::HELPERNAME>(htItem) = ui->helperName->text().toStdString();
         std::get<XDGSearch::EXTENSIONS>(htItem) = ui->helperFileExt->text().toStdString();
         std::get<XDGSearch::COMMANDLINE>(htItem) = ui->helperCmdLine->text().toStdString();
-        std::get<XDGSearch::GRANULARITY>(htItem) = ui->helperGranularity->value();
+        std::get<XDGSearch::GRANULARITY>(htItem) = ui->helperGranularity->value();  /// number of lines length of a document, 0 means documents length of 15 lines
 
         conf ->writeSettings(htItem);
         ui->allHelpersList->setEnabled(true);
@@ -377,7 +377,7 @@ void Preferences::on_deleteHelper_clicked()     /// irreversibly erase selected 
     }
 }
 
-void Preferences::on_helperDefaults_clicked() /// restore initial helpers default setting
+void Preferences::on_helperDefaults_clicked() /// restores the helpers list to the first installation, any changes will be lost
 {
     conf ->defaultSettings("");
     refreshallHelpersList();

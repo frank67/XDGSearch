@@ -98,7 +98,7 @@ void XDGSearch::cfgTemplates::defaultSettings(const std::string& XDGKeyword)
 {
     defaultSettingsCommonCode(XDGKeyword, "Templates");
     addHelperToPool("odt");
-    addHelperToPool("text");
+    addHelperToPool("code");
 }
 
 void XDGSearch::cfgPublicShare::defaultSettings(const std::string& XDGKeyword)
@@ -141,7 +141,7 @@ void XDGSearch::cfgSources::defaultSettings(const std::string& XDGKeyword)
     std::get<STEMMING>(pools) = "none";
     std::get<STOPWORDSFILE>(pools) = "none";
 
-    addHelperToPool("text");
+    addHelperToPool("code");
 }
 
 void XDGSearch::Settings::defaultSettings(const std::string& n = std::string())
@@ -238,40 +238,39 @@ bool XDGSearch::ConfigurationBase::isFirstRun()
     if(appDBDir.mkdir("stopwords"))  {  /// true if not exist, make directory and populate merging stopwords files
         std::ofstream sw_english;
         sw_english.open("stopwords/english.list", std::ofstream::out | std::ofstream::app);
-        sw_english << "a" << "\n" <<
-                      "about" << "\n" <<
-                      "an" << "\n" <<
-                      "and" << "\n" <<
-                      "are" << "\n" <<
-                      "as" << "\n" <<
-                      "at" << "\n" <<
-                      "be" << "\n" <<
-                      "by" << "\n" <<
-                      "for" << "\n" <<
-                      "from" << "\n" <<
-                      "how" << "\n" <<
-                      "i" << "\n" <<
-                      "in" << "\n" <<
-                      "is" << "\n" <<
-                      "it" << "\n" <<
-                      "of" << "\n" <<
-                      "on" << "\n" <<
-                      "or" << "\n" <<
-                      "that" << "\n" <<
-                      "the" << "\n" <<
-                      "this" << "\n" <<
-                      "to" << "\n" <<
-                      "was" << "\n" <<
-                      "what" << "\n" <<
-                      "when" << "\n" <<
-                      "where" << "\n" <<
-                      "which" << "\n" <<
-                      "who" << "\n" <<
-                      "why" << "\n" <<
-                      "will" << "\n" <<
-                      "with" << "\n" <<
-                      "you" << "\n" <<
-                      "your" << "\n";
+        sw_english << "a" << '\n' <<
+                      "about" << '\n' <<
+                      "an" << '\n' <<
+                      "and" << '\n' <<
+                      "are" << '\n' <<
+                      "as" << '\n' <<
+                      "at" << '\n' <<
+                      "by" << '\n' <<
+                      "for" << '\n' <<
+                      "from" << '\n' <<
+                      "how" << '\n' <<
+                      "i" << '\n' <<
+                      "in" << '\n' <<
+                      "is" << '\n' <<
+                      "it" << '\n' <<
+                      "of" << '\n' <<
+                      "on" << '\n' <<
+                      "or" << '\n' <<
+                      "that" << '\n' <<
+                      "the" << '\n' <<
+                      "this" << '\n' <<
+                      "to" << '\n' <<
+                      "was" << '\n' <<
+                      "what" << '\n' <<
+                      "when" << '\n' <<
+                      "where" << '\n' <<
+                      "which" << '\n' <<
+                      "who" << '\n' <<
+                      "why" << '\n' <<
+                      "will" << '\n' <<
+                      "with" << '\n' <<
+                      "you" << '\n' <<
+                      "your" << '\n';
         sw_english.close();
     }
     settings.beginGroup("global");      /// test is first run checking askQuitConfirmation key in xdgsearch.conf
@@ -306,7 +305,7 @@ void XDGSearch::ConfigurationBase::writeSettings(const poolType& pt)
 
 void XDGSearch::ConfigurationBase::initSettings()
 {
-    writeSettings(std::make_tuple("text" ,"txt,cpp,h"   ,"/bin/cat"          ,6));  /// 6 helpers written to .conf file
+    writeSettings(std::make_tuple("code" ,"txt,cpp,h"   ,"/bin/cat"          ,6));  /// 6 helpers written to .conf file
     writeSettings(std::make_tuple("pdf"  ,"pdf"         ,"/usr/bin/pstotext" ,6));
     writeSettings(std::make_tuple("odt"  ,"odt,ods"     ,"/usr/bin/odt2txt"  ,6));
     writeSettings(std::make_tuple("image","jpg,jpeg,png","/usr/bin/iinfo -v" ,0));

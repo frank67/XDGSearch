@@ -305,8 +305,12 @@ try {
                     << "p, li { white-space: pre-wrap; }\n"
                     << "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n";
 
-        if(!matches.size()) /// if no result matches.size() == 0 therefore set composeHTML to show: "Not found"
-            composeHTML  << "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">No item found</p></body></html>";
+        if(!matches.size()) /// if no result then matches.size() == 0 therefore set composeHTML to show: "No items found"
+            composeHTML  << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>"
+                         << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>"
+                         << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>"
+                         << "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>"
+                         << "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#bababa;\">No items found</span></p></body></html>";
         else    {           /// matches has documents, starts formatting
             for( Xapian::MSetIterator matchesIterator = matches.begin()
                ; matchesIterator != matches.end()
@@ -327,6 +331,10 @@ try {
                         linkPath = linkPath + "/" + linkName;
                 /// retrieve the data of the document pointed by the iterator
                 QString documentText = QString::fromStdString(matchesIterator.get_document().get_data());
+
+                documentText.replace("&","&amp;");  /// in documentText replaces HTML reserved characters
+                documentText.replace("<","&lt;");
+                documentText.replace(">","&gt;");
                 iss.clear();
                 iss.str(soughtTerms);       /// recycle iss object now it holds the terms to search
                 /// iteration to achieve bolded sought terms effect when documentText will be added to composeHTML
@@ -334,7 +342,7 @@ try {
                    ; iss >> term
                    ; /* null */)
                 {
-                    for( int pos = documentText.indexOf(QString::fromStdString(term), 0, Qt::CaseInsensitive)
+                    for( decltype(documentText.indexOf(QString(""))) pos = documentText.indexOf(QString::fromStdString(term), 0, Qt::CaseInsensitive)
                        ; pos != -1
                        ; /* null */)
                     {

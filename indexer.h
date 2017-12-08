@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef INDEXER_H
-#define INDEXER_H
+#ifndef XDGSEARCH_INCLUDED_INDEXER_H
+#define XDGSEARCH_INCLUDED_INDEXER_H
 
 #include <memory>
 #include <xapian.h>

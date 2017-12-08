@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>528</width>
-    <height>386</height>
+    <height>427</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -105,7 +105,7 @@ p, li { white-space: pre-wrap; }
       <x>10</x>
       <y>0</y>
       <width>471</width>
-      <height>311</height>
+      <height>341</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -123,7 +123,7 @@ p, li { white-space: pre-wrap; }
        <x>10</x>
        <y>30</y>
        <width>451</width>
-       <height>271</height>
+       <height>290</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
@@ -152,6 +152,9 @@ p, li { white-space: pre-wrap; }
          <widget class="QLineEdit" name="desktopDir">
           <property name="enabled">
            <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>the directory name bound to the Desktop pool</string>
           </property>
           <property name="readOnly">
            <bool>true</bool>
@@ -190,6 +193,9 @@ p, li { white-space: pre-wrap; }
         </item>
         <item>
          <widget class="QLineEdit" name="templateDir">
+          <property name="toolTip">
+           <string>the directory name bound to the Templates pool</string>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -230,6 +236,9 @@ p, li { white-space: pre-wrap; }
         </item>
         <item>
          <widget class="QLineEdit" name="publicshareDir">
+          <property name="toolTip">
+           <string>the directory name bound to the PublicShare pool</string>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -270,6 +279,9 @@ p, li { white-space: pre-wrap; }
         </item>
         <item>
          <widget class="QLineEdit" name="documentsDir">
+          <property name="toolTip">
+           <string>the directory name bound to the Documents pool</string>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -313,6 +325,9 @@ p, li { white-space: pre-wrap; }
           <property name="enabled">
            <bool>true</bool>
           </property>
+          <property name="toolTip">
+           <string>the directory name bound to the Music pool</string>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -353,6 +368,9 @@ p, li { white-space: pre-wrap; }
         </item>
         <item>
          <widget class="QLineEdit" name="picturesDir">
+          <property name="toolTip">
+           <string>the directory name bound to the Pictures pool</string>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -393,6 +411,9 @@ p, li { white-space: pre-wrap; }
         </item>
         <item>
          <widget class="QLineEdit" name="videosDir">
+          <property name="toolTip">
+           <string>the directory name bound to the Videos pool</string>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -472,6 +493,9 @@ p, li { white-space: pre-wrap; }
       </item>
       <item>
        <widget class="QLineEdit" name="sourcesDir">
+        <property name="toolTip">
+         <string>the directory name bound to the current pool</string>
+        </property>
         <property name="readOnly">
          <bool>true</bool>
         </property>

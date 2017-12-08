@@ -70,8 +70,8 @@ void Helpers::refreshHelpersList() const /// retrieves helper's names from the .
 
 void Helpers::on_helpersList_itemDoubleClicked(QListWidgetItem *item)
 {
-    selectedHelper = item->text();
-    this->close();
+    Q_UNUSED(item)
+    buttonOk->clicked();
 }
 
 void Helpers::on_helpersList_itemClicked(QListWidgetItem *item)

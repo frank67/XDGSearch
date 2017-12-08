@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef XDGSEARCH_INCLUDED_MAINWINDOW_H
+#define XDGSEARCH_INCLUDED_MAINWINDOW_H
 
 #include "indexer.h"    /// first because required by Xapian
 #include "ui_mainwindow.h"

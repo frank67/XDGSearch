@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef HELPERS_H
-#define HELPERS_H
+#ifndef XDGSEARCH_INCLUDED_HELPERS_H
+#define XDGSEARCH_INCLUDED_HELPERS_H
 
 #include <QDialog>
 #include <QPushButton>
@@ -39,9 +39,7 @@ private slots:
 
     void clicked_buttonBoxCancel();     /// 4 custom slots invoked after signal emitted: see connect in the class constructor definition
     void clicked_buttonBoxOk();
-
     void on_helpersList_itemDoubleClicked(QListWidgetItem *item);
-
     void on_helpersList_itemClicked(QListWidgetItem *item);
 
 private:

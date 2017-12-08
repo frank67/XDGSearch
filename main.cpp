@@ -18,17 +18,23 @@
 
 #include "mainwindow.h"
 #include <QApplication>
+#include <QCommandLineParser>
 #include "wizard.h"
 #include "configuration.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QApplication app(argc, argv);
     QApplication::setEffectEnabled(Qt::UI_AnimateMenu);
     QApplication::setEffectEnabled(Qt::UI_AnimateCombo);
     QCoreApplication::setOrganizationName("XDGSearch");
     QCoreApplication::setApplicationName("xdgsearch");
     QCoreApplication::setApplicationVersion(APP_VERSION);   /// the version number is stored into xdgsearch.pro file
+    QCommandLineParser parser;
+    parser.setApplicationDescription("XDGSearch is a XAPIAN based file indexer and search tool.");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.process(app);
 
     const XDGSearch::Configuration conf;
     bool b = conf.isFirstRun();
@@ -38,12 +44,12 @@ int main(int argc, char *argv[])
         if(wiz.exec() == QDialog::Accepted) {   /// opens wizard dialog and if accepted opens xdgsearch's mainwindow
             MainWindow w0;
             w0.show();
-            return a.exec();
+            return app.exec();
         }
     } else  {
         MainWindow w1;
         w1.show();
-        return a.exec();
+        return app.exec();
     }
 
     return EXIT_FAILURE;
