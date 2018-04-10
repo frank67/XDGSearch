@@ -45,8 +45,8 @@ public:
     explicit Wizard(QWidget *parent = 0);
     ~Wizard();
 protected:
-    bool validateCurrentPage() Q_DECL_OVERRIDE;     /// calls proper validatePage?() function member
-    void initializePage(int) Q_DECL_OVERRIDE;       /// calls proper fillPage?Widget() function member
+    bool validateCurrentPage() Q_DECL_OVERRIDE;     /// calls proper validatePage*() function member
+    void initializePage(int) Q_DECL_OVERRIDE;       /// calls proper fillPage*Widget() function member
 private slots:
     void on_desktopDirButton_clicked();         /// 8 slot invoked when button is clicked
     void on_templateDirButton_clicked();
@@ -77,4 +77,4 @@ private:
     std::forward_list<XDGSearch::poolType> confPools;   /// once the pool is configured then it's added to this container
 };
 
-#endif /// WIZARD_H
+#endif /// XDGSEARCH_INCLUDED_WIZARD_H

@@ -85,4 +85,4 @@ void XDGSearch::IndexerBase::seek(const std::string& s)
     htmlResult = qr.getResult();
 }
 
-#endif /// INDEXER_H
+#endif /// XDGSEARCH_INCLUDED_INDEXER_H

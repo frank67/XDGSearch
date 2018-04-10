@@ -92,12 +92,14 @@ void MainWindow::populateCBox() const
         if(!std::get<XDGSearch::LOCALPOOLNAME>(pt).empty())
             ui ->poolCBox ->addItem(QString::fromStdString(std::get<XDGSearch::LOCALPOOLNAME>(pt)), QVariant::fromValue(p));
     }
+    ui->poolCBox->setCurrentText(QString::fromStdString(conf ->getPoolOnStartup()));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (maybeQuit()) {  /// if not disabled by the user opens a dialog to ask close window confirmation
         conf ->saveMainWindowGeometry(QWidget::saveGeometry());
+        conf ->setPoolOnStartup(ui->poolCBox->currentText().toStdString());
         event->accept();
     } else
         event->ignore();

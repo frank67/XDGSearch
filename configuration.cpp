@@ -156,10 +156,6 @@ void XDGSearch::Settings::defaultSettings(const std::string& n = std::string())
     for(const auto& k : keys)
         settings.remove(k);
 
-    settings.beginGroup("global");
-    settings.remove("");
-    settings.endGroup();
-
     initSettings();
 }
 
@@ -453,3 +449,20 @@ void XDGSearch::ConfigurationBase::addHelperToPool(const std::string& h)
         std::get<POOLHELPERS>(pools) += ',';
     std::get<POOLHELPERS>(pools) += h;
 }
+
+const std::string XDGSearch::ConfigurationBase::getPoolOnStartup()
+{
+    settings.beginGroup("global");
+    const std::string retval = settings.value("poolOnStartup").toString().toStdString();
+    settings.endGroup();
+    return retval;
+}
+
+void XDGSearch::ConfigurationBase::setPoolOnStartup(const std::string& p)
+{
+    settings.beginGroup("global");
+    settings.setValue("poolOnStartup", QString::fromStdString(p));              /// pool name to set at startup
+    settings.endGroup();
+}
+
+

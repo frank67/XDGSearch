@@ -79,4 +79,4 @@ private:
     void refreshallHelpersList() const;
 };
 
-#endif /// PREFERENCES_H
+#endif /// XDGSEARCH_INCLUDED_PREFERENCES_H

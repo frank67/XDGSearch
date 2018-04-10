@@ -299,12 +299,12 @@ void Preferences::on_tabWidget_currentChanged(int index)
         switch (ret) {
           case QMessageBox::Save:
               // Save was clicked
-            buttonApply->clicked();
+              buttonApply->clicked();
               break;
           case QMessageBox::Discard:
               // Don't Save was clicked
-            fillPageInitValue();
-            buttonApply->setEnabled(false);
+              fillPageInitValue();
+              buttonApply->setEnabled(false);
               break;
           case QMessageBox::Cancel:
               // Cancel was clicked

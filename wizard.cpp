@@ -270,16 +270,16 @@ void Wizard::fillPage3Widget()
     if( !ui ->sourcesNoConfig->isChecked() )    {
         report  <<  " Sources"    << ":\t\t\""
                 <<  ui ->sourcesDir->text().toStdString()   << "\"";
-        confPools.push_front(std::make_tuple( "XDG_SOURCES_DIR"
-                                            , "Sources"
-                                            , "code"
-                                            , ui ->sourcesDir->text().toStdString()
-                                            , "none"
-                                            , "none" ));
+        confPools.emplace_front( "XDG_SOURCES_DIR"
+                               , "Sources"
+                               , "code"
+                               , ui ->sourcesDir->text().toStdString()
+                               , "none"
+                               , "none" );
     } else  {
         report  <<  " Sources"    << ":\t\t- "
                 <<  "disabled"   << " -";
-        confPools.push_front(std::make_tuple("XDG_SOURCES_DIR", "", "", "", "none", "none"));
+        confPools.emplace_front("XDG_SOURCES_DIR", "", "", "", "none", "none");
     }
 
     ui ->summaryLabel->setText(QString::fromStdString(report.str()));   /// displays the resulting report
@@ -310,5 +310,6 @@ void Wizard::on_Wizard_accepted()
         conf.writeSettings(p);
 
     conf.initSettings();    /// after that pool settings are been written now it writes initial helpers settings
-
+    confPools.reverse();
+    conf.setPoolOnStartup(std::get<XDGSearch::LOCALPOOLNAME>(confPools.front()));
 }

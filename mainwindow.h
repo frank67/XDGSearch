@@ -68,4 +68,4 @@ private:
     void showSplashScreenText() const;    /// shows helpful text in the resultPane ui widget
 };
 
-#endif /// MAINWINDOW_H
+#endif /// XDGSEARCH_INCLUDED_MAINWINDOW_H

@@ -51,4 +51,4 @@ private:
     void refreshHelpersList() const;
 };
 
-#endif /// HELPERS_H
+#endif /// XDGSEARCH_INCLUDED_HELPERS_H

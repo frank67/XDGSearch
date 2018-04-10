@@ -44,12 +44,12 @@ using poolType = std::tuple<  std::string       ///  0 XDGPoolName
                             , std::string>;     ///  5 stopwordsfile
 
 enum {
-      XDGPOOLNAME
-    , LOCALPOOLNAME
-    , POOLHELPERS
-    , POOLDIRPATH
-    , STEMMING
-    , STOPWORDSFILE
+      XDGPOOLNAME       /// the names of the special XDG user directories, possible names are listed in the xdg-user-dir manual page: man xdg-user-dir
+    , LOCALPOOLNAME     /// localized names of the special XDG user directories, the value depends on which language your user speak
+    , POOLHELPERS       /// comma separated list of one or more helpers
+    , POOLDIRPATH       /// the directory name bound to the current pool
+    , STEMMING          /// the stemming algorithm to use, default: none
+    , STOPWORDSFILE     /// the stop-word file to use, default: none
 };
 
 using helperType = std::tuple<std::string       ///  0 helper name
@@ -58,7 +58,7 @@ using helperType = std::tuple<std::string       ///  0 helper name
                             , unsigned int>;    ///  3 granularity
 enum {
       HELPERNAME    /// the name of the helper
-    , EXTENSIONS    /// comma separated list of extensions
+    , EXTENSIONS    /// comma separated list of file extensions
     , COMMANDLINE   /// the command name to run
     , GRANULARITY   /// number of lines length of a document, 0 means documents length of 15 lines
 };
@@ -66,7 +66,7 @@ enum {
 const std::string toXDGKey(const Pool&);              /// translate from Pool type item to string name key
 class Configuration;                    /// Interface class for configuration/settings  operation
 class ConfigurationBase;                /// "Cheshire Cat" implemention class for Configuration class
-class cfgDesktop;                       /// Specialized classes that inherit from ConfigurationBase to define its pure virtual funcion
+class cfgDesktop;                       /// Specialized classes that inherit from ConfigurationBase to define its pure virtual function
 class cfgTemplates;
 class cfgPublicShare;
 class cfgDocuments;
@@ -102,6 +102,8 @@ protected:
     void addHelperToPool(const std::string&);               /// add specified helper to private pools tuple object defined in this class
     void initSettings();                                    /// restore default settings
     void defaultSettingsCommonCode(const std::string&, const std::string&);
+    const std::string getPoolOnStartup();
+    void setPoolOnStartup(const std::string&);
     poolType pools;
     QSettings settings;
 };
@@ -109,7 +111,7 @@ protected:
 class XDGSearch::Configuration final {
 public:
     Configuration();
-    Configuration(const Pool&);
+    explicit Configuration(const Pool&);
 
     const poolType getPools() const             { return d ->pools; }
     void defaultSettings(const std::string& s) const    { d ->defaultSettings(s); }
@@ -122,8 +124,10 @@ public:
     bool isFirstRun() const     { return d ->isFirstRun(); }
     bool isPopulatedDB(const Pool& p) const     { return d ->isPopulatedDB(p); }
     void initSettings() const   { return d ->initSettings(); }
-    void writeSettings(const helperType& ht) const   { return d ->writeSettings(ht); }
-    void writeSettings(const poolType& pt) const     { return d ->writeSettings(pt); }
+    void writeSettings(const helperType& ht) const  { return d ->writeSettings(ht); }
+    void writeSettings(const poolType& pt) const    { return d ->writeSettings(pt); }
+    std::string getPoolOnStartup() const            { return d ->getPoolOnStartup(); }
+    void setPoolOnStartup(const std::string& p) const   { d ->setPoolOnStartup(p); }
     QStringList getHelpersNameList() const      { return d ->getHelpersNameList(); }
     void saveMainWindowGeometry(const QByteArray& g) const       { d ->saveMainWindowGeometry(g); }
     const QByteArray readMainWindowGeometry() const     { return d ->readMainWindowGeometry(); }
@@ -173,5 +177,5 @@ XDGSearch::Configuration::Configuration()
     d = std::unique_ptr<XDGSearch::ConfigurationBase>(new Settings);
 }
 
-#endif /// CONFIGURATION
+#endif /// XDGSEARCH_INCLUDED_CONFIGURATION_H
 

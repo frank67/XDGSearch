@@ -38,7 +38,7 @@ LIBS     += -lQt5Core \
             -pthread
 
 # The application version
-VERSION = 0.15.4
+VERSION = 0.16.0
 
 # Defines the preprocessor macro to get the application version available in the application code
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"

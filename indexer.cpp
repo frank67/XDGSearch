@@ -100,11 +100,12 @@ try {
     for(const auto& h : poolHelpers)    {   /// for each helper initializes a thread that's added to the container
         if(std::get<HELPERNAME>(h).empty())          /// dummy checks, eventually skips empty helper
             continue;
-        helpersThread.push_front(std::unique_ptr<std::thread>(new std::thread( &IndexerBase::forEachHelper
-                                                                             , this
-                                                                             , h
-                                                                             , currentPoolSettings
-                                                                             , tmpDB) ));
+        helpersThread.emplace_front(new std::thread( &IndexerBase::forEachHelper
+                                                   , this
+                                                   , h
+                                                   , currentPoolSettings
+                                                   , tmpDB) );
+
     }
 
     for(const auto& t : helpersThread)
