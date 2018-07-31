@@ -19,15 +19,13 @@
 #include "indexer.h"
 #include <QDirIterator>
 #include <QStringList>
-#include <forward_list>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <cstdio>
 #include <stdexcept>
 #include <new>      /// used for bad_alloc
-#include <thread>
-#include <mutex>
+#include <future>
 
 
 XDGSearch::IndexerBase::IndexerBase(QObject* parent, const Pool& p) :    /// initializes conf member with a Configuration object of Pool p type
@@ -84,40 +82,129 @@ void XDGSearch::IndexerBase::populateDB()
         ;
     std::istringstream iss(std::get<POOLHELPERS>(currentPoolSettings));   /// stringstream for comma separated helpers list
     std::forward_list<XDGSearch::helperType> poolHelpers;       /// container for each helper of this pool
-    std::forward_list<std::unique_ptr<std::thread>> helpersThread;  /// container for threaded execution for each helper
+
 
     const std::string  tmpDirName  =  tempDir.path().toStdString() + "/"
                      , DBName  =  std::get<LOCALPOOLNAME>(currentPoolSettings)
                      , tmpDBName  =  tmpDirName + DBName;       /// provides names for database and temporary database
 try {
         /// try to create the temporary database under /tmp
-    Xapian::WritableDatabase* tmpDB(new Xapian::WritableDatabase( tmpDBName
-                                                                , Xapian::DB_CREATE
-                                                                , Xapian::DB_BACKEND_GLASS) );
+    Xapian::WritableDatabase tmpDB( tmpDBName
+                                  , Xapian::DB_CREATE
+                                  , Xapian::DB_BACKEND_GLASS);
     for(std::string h; std::getline(iss, h, ','); /* null */)   /// for each helper in the stringstream object
         poolHelpers.push_front(conf ->enqueryHelper(h));        /// populate the container that holds items informations
 
     for(const auto& h : poolHelpers)    {   /// for each helper initializes a thread that's added to the container
         if(std::get<HELPERNAME>(h).empty())          /// dummy checks, eventually skips empty helper
             continue;
-        helpersThread.emplace_front(new std::thread( &IndexerBase::forEachHelper
-                                                   , this
-                                                   , h
-                                                   , currentPoolSettings
-                                                   , tmpDB) );
+        const std::string& stopWordsFile = "./stopwords/" + std::get<STOPWORDSFILE>(currentPoolSettings);
 
+        Xapian::Stem stemmer(std::get<STEMMING>(currentPoolSettings));
+        Xapian::TermGenerator indexer;
+        Xapian::SimpleStopper sstopper;
+        std::fstream ifs(stopWordsFile);
+
+        indexer.set_stemmer(stemmer);
+        if(ifs) {       /// if the user set the stopwords file populate the simplestopper object
+            for(std::string s; std::getline(ifs, s); /* null */)
+                sstopper.add(s);
+            indexer.set_stopper(&sstopper);
+        }
+
+        std::istringstream iss(std::get<EXTENSIONS>(h));
+        QStringList filesExtensionFilter;   /// define a QT string list container that'll act as file extension filter
+
+        for(std::string e; std::getline(iss, e, ','); ) {
+            e = "*." + e;       /// prepare the string to add to the container, e.g.: *.pdf
+            filesExtensionFilter  << QString::fromStdString(e); /// populate the QStringList container
+        }
+        /// define a file iterator that:
+        QDirIterator dirIt( QString::fromStdString(std::get<POOLDIRPATH>(currentPoolSettings))    /// reads from the pool directory and so on
+                          , filesExtensionFilter        /// evaluate only these file extensions
+                          , QDir::Files                 /// consider only files
+                          , QDirIterator::Subdirectories | QDirIterator::FollowSymlinks );  /// recurse sub-directory and evaluate sym-links
+
+        while(dirIt.hasNext())  {   /// outer loop: until file iterator reaches the end
+            const std::string& fileFullPathName = dirIt.next().toStdString();    /// fully qualified file name
+
+            auto ftr = std::async( XDGSearch::forEachFile
+                                                       , fileFullPathName
+                                                       , h );
+            const auto& pathAndCmdOutput = ftr.get();
+
+            unsigned int  linescounter = 0;
+            const unsigned int granularity = std::get<GRANULARITY>(h)
+                             , maxLinesCounted = granularity;
+
+            std::istringstream iss;
+            iss.str(pathAndCmdOutput.second);         /// recycle iss object, now holds the command standard output
+
+            for(std::string line, para; !iss.eof(); /* null */ ) { /// inner loop: for each line of the command's standard output
+                getline(iss, line);
+                if(!iss.eof() && line.empty())      /// avoids empty lines
+                    continue;
+                if(!granularity)    {   /// if the user set to 0 then only first 15 lines are read, else...
+                    if (iss.eof() || linescounter == 15) {
+
+                        if(iss.eof())   {   /// if the eof is reached before the 15° line
+                            para += '\n';
+                            para += line;
+                        }
+
+                        Xapian::Document doc;   /// defines an empty document
+                        doc.set_data(para);     /// stores a 15 lines only paragraph into the document
+                        /// see: https://trac.xapian.org/wiki/FAQ/UniqueIds
+                        doc.add_term("P" + pathAndCmdOutput.first);   /// add fully qualified file name as "P" terms to the document
+
+                        indexer.set_document(doc);
+                        indexer.index_text(para);
+                        tmpDB.add_document(doc);  /// add the document to the database
+                        break;      /// job done for this standard output, breaks in order to process a new one
+
+                    } else {
+                        if(!para.empty())
+                            para += '\n';    /// if not empty then adds a new line
+
+                        para += line;       /// adds the line to the paragraph
+                        ++linescounter;     /// increment the counter
+                    }
+                } else {        /// ...else standard output will be split into blocks of granularity size
+                    if (iss.eof() || linescounter == maxLinesCounted) {
+
+                        if(iss.eof())   {
+                            para += '\n';
+                            para += line;
+                        }
+
+                        Xapian::Document doc;
+                        doc.set_data(para);
+                        doc.add_term("P" + pathAndCmdOutput.first);
+
+                        indexer.set_document(doc);
+                        indexer.index_text(para);
+
+                        tmpDB.add_document(doc);
+
+                        para.clear();       /// reset the paragraph
+                        linescounter = 0;   /// reset the counter
+
+                    } else {
+                        if(!para.empty())
+                            para += '\n';
+
+                        para += line;
+                        ++linescounter;
+                    }
+                }
+            }
+        }
     }
 
-    for(const auto& t : helpersThread)
-    {
-        p_value += p_valueStep;
-        emit progressValue(p_value);
-        t ->join();     /// join each thread object stored in the container
-    }
+    tmpDB.commit();
+    tmpDB.compact(DBName);    /// writes compacted database from /tmp to $HOME/.local/share/XDGSearch/xdgsearch
+    tmpDB.close();
 
-    tmpDB ->compact(DBName);    /// writes compacted database from /tmp to $HOME/.local/share/XDGSearch/xdgsearch
-    tmpDB ->close();
-    delete tmpDB;               /// frees resources
     emit progressValue(100);
     resetProgressBarValue();    /// set initial value when the database build process gets completed
 }
@@ -139,20 +226,20 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
                               , const XDGSearch::poolType& currentPoolSettings
                               , Xapian::WritableDatabase* tmpDB)
 {   /// threaded function to populate each pool's database
-    static std::unique_ptr<std::mutex> mtx1(new std::mutex);    /// defines mutex to grant mutually exclusive rights to the threads that write the database
-    const std::string stopWordsFile = "./stopwords/" + std::get<STOPWORDSFILE>(currentPoolSettings);
+    // static std::unique_ptr<std::mutex> mtx1(new std::mutex);    /// defines mutex to grant mutually exclusive rights to the threads that write the database
+    const std::string& stopWordsFile = "./stopwords/" + std::get<STOPWORDSFILE>(currentPoolSettings);
 
-    Xapian::WritableDatabase inRamDB(std::string(""), Xapian::DB_BACKEND_INMEMORY); /// open the database that'll hold data
+    //Xapian::WritableDatabase inRamDB(std::string(""), Xapian::DB_BACKEND_INMEMORY); /// open the database that'll hold data
     Xapian::Stem stemmer(std::get<STEMMING>(currentPoolSettings));
-    Xapian::TermGenerator indexer;
+    Xapian::TermGenerator* indexer;
     Xapian::SimpleStopper sstopper;
     std::fstream ifs(stopWordsFile);
 
-    indexer.set_stemmer(stemmer);
+    indexer ->set_stemmer(stemmer);
     if(ifs) {       /// if the user set the stopwords file populate the simplestopper object
         for(std::string s; std::getline(ifs, s); /* null */)
             sstopper.add(s);
-        indexer.set_stopper(&sstopper);
+        indexer ->set_stopper(&sstopper);
     }
 
     std::istringstream iss(std::get<EXTENSIONS>(h));
@@ -169,32 +256,21 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
                       , QDirIterator::Subdirectories | QDirIterator::FollowSymlinks );  /// recurse sub-directory and evaluate sym-links
 
     while(dirIt.hasNext())  {   /// outer loop: until file iterator reaches the end
-        const std::string  fileFullPathName = dirIt.next().toStdString()    /// fully qualified file name
-                         , cmd = std::get<COMMANDLINE>(h)         /// start command line with command name
-                               + " \""                  /// surrounds the arguments with quotation marks: ""
-                               + fileFullPathName
-                               + "\"";
-        std::string cmdStdOut;      /// container that'll hold the command's standard output
+        const std::string& fileFullPathName = dirIt.next().toStdString();    /// fully qualified file name
 
-        FILE* pipe = popen(cmd.c_str(), "r");   /// runs the command
-        /// may returns this error message: "Syntax error: EOF in backquote substitution"
-        /// if so the filename (fileFullPathName) may contains characters that they needed to be escaped
-        /// like backtick ` FYI
-
-        for(char buffer[512]; !feof(pipe); /* null */)
-            if (fgets(buffer, 512, pipe) != NULL)
-                cmdStdOut += buffer;        /// it reads the command standard output
-
-        pclose(pipe);
+        auto ftr = std::async( XDGSearch::forEachFile
+                                                   , fileFullPathName
+                                                   , h );
+        const auto& pathAndCmdOutput = ftr.get();
 
         unsigned int  linescounter = 0;
         const unsigned int granularity = std::get<GRANULARITY>(h)
                          , maxLinesCounted = granularity;
 
-        iss.clear();
-        iss.str(cmdStdOut);         /// recycle iss object, now holds the command standard output
+        std::istringstream iss;
+        iss.str(pathAndCmdOutput.second);         /// recycle iss object, now holds the command standard output
 
-        for(std::string line, para; !iss.eof(); /* null */) { /// inner loop: for each line of the command's standard output
+        for(std::string line, para; !iss.eof(); /* null */ ) { /// inner loop: for each line of the command's standard output
             getline(iss, line);
             if(!iss.eof() && line.empty())      /// avoids empty lines
                 continue;
@@ -209,11 +285,11 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
                     Xapian::Document doc;   /// defines an empty document
                     doc.set_data(para);     /// stores a 15 lines only paragraph into the document
                     /// see: https://trac.xapian.org/wiki/FAQ/UniqueIds
-                    doc.add_term("P" + fileFullPathName);   /// add fully qualified file name as "P" terms to the document
+                    doc.add_term("P" + pathAndCmdOutput.first);   /// add fully qualified file name as "P" terms to the document
 
-                    indexer.set_document(doc);
-                    indexer.index_text(para);
-                    inRamDB.add_document(doc);  /// add the document to the database
+                    indexer ->set_document(doc);
+                    indexer ->index_text(para);
+                    tmpDB ->add_document(doc);  /// add the document to the database
                     break;      /// job done for this standard output, breaks in order to process a new one
 
                 } else {
@@ -233,11 +309,11 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
 
                     Xapian::Document doc;
                     doc.set_data(para);
-                    doc.add_term("P" + fileFullPathName);
+                    doc.add_term("P" + pathAndCmdOutput.first);
 
-                    indexer.set_document(doc);
-                    indexer.index_text(para);
-                    inRamDB.add_document(doc);
+                    indexer ->set_document(doc);
+                    indexer ->index_text(para);
+                    tmpDB ->add_document(doc);
 
                     para.clear();       /// reset the paragraph
                     linescounter = 0;   /// reset the counter
@@ -252,6 +328,7 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
             }
         }
     }
+/*
     inRamDB.commit();   /// syncing
 
     mtx1 ->lock();  /// grants exclusive access to each thread for the following code
@@ -264,7 +341,101 @@ void XDGSearch::IndexerBase::forEachHelper(const XDGSearch::helperType& h
     tmpDB ->commit();
     inRamDB.close();
 
-    mtx1 ->unlock();    /// ends of the mutex block
+    mtx1 ->unlock();    /// ends of the mutex block*/
+}
+
+std::pair<std::string, std::string> XDGSearch::forEachFile(const std::string& fileFullPathName
+                                       , const XDGSearch::helperType& h)
+{
+    const std::string cmd = std::get<COMMANDLINE>(h)         /// start command line with command name
+            + " \""                  /// surrounds the arguments with quotation marks: ""
+            + fileFullPathName
+            + "\"";
+
+    std::string cmdStdOut;      /// container that'll hold the command's standard output
+
+    FILE* pipe = popen(cmd.c_str(), "r");   /// runs the command
+    /// may returns this error message: "Syntax error: EOF in backquote substitution"
+    /// if so the filename (fileFullPathName) may contains characters that they needed to be escaped
+    /// like backtick ` FYI
+
+    for(char buffer[512]; !feof(pipe); /* null */)
+        if (fgets(buffer, 512, pipe) != NULL)
+            cmdStdOut += buffer;        /// it reads the command standard output
+
+    pclose(pipe);
+
+    const auto& retval = std::make_pair(fileFullPathName, cmdStdOut);
+    return retval;
+
+/*
+    Xapian::WritableDatabase* inRamDB;
+    Xapian::TermGenerator* indexer;
+
+    unsigned int  linescounter = 0;
+    const unsigned int granularity = std::get<GRANULARITY>(h)
+                     , maxLinesCounted = granularity;
+
+    std::istringstream iss;
+    iss.str(cmdStdOut);         /// recycle iss object, now holds the command standard output
+
+    for(std::string line, para; !iss.eof(); /* null */ /*) { /// inner loop: for each line of the command's standard output
+        getline(iss, line);
+        if(!iss.eof() && line.empty())      /// avoids empty lines
+            continue;
+        if(!granularity)    {   /// if the user set to 0 then only first 15 lines are read, else...
+            if (iss.eof() || linescounter == 15) {
+
+                if(iss.eof())   {   /// if the eof is reached before the 15° line
+                    para += '\n';
+                    para += line;
+                }
+
+                Xapian::Document doc;   /// defines an empty document
+                doc.set_data(para);     /// stores a 15 lines only paragraph into the document
+                /// see: https://trac.xapian.org/wiki/FAQ/UniqueIds
+                doc.add_term("P" + fileFullPathName);   /// add fully qualified file name as "P" terms to the document
+
+                indexer->set_document(doc);
+                indexer->index_text(para);
+                inRamDB->add_document(doc);  /// add the document to the database
+                break;      /// job done for this standard output, breaks in order to process a new one
+
+            } else {
+                if(!para.empty())
+                    para += '\n';    /// if not empty then adds a new line
+
+                para += line;       /// adds the line to the paragraph
+                ++linescounter;     /// increment the counter
+            }
+        } else {        /// ...else standard output will be split into blocks of granularity size
+            if (iss.eof() || linescounter == maxLinesCounted) {
+
+                if(iss.eof())   {
+                    para += '\n';
+                    para += line;
+                }
+
+                Xapian::Document doc;
+                doc.set_data(para);
+                doc.add_term("P" + fileFullPathName);
+
+                indexer->set_document(doc);
+                indexer->index_text(para);
+                inRamDB->add_document(doc);
+
+                para.clear();       /// reset the paragraph
+                linescounter = 0;   /// reset the counter
+
+            } else {
+                if(!para.empty())
+                    para += '\n';
+
+                para += line;
+                ++linescounter;
+            }
+        }
+    }*/
 }
 
 const Xapian::MSet XDGSearch::IndexerBase::enqueryDB(const std::string& query_string) const

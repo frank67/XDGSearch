@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <xapian.h>
+#include <forward_list>
 #include <QTemporaryDir>
 #include <QObject>
 #include "configuration.h"
@@ -28,6 +29,8 @@
 namespace XDGSearch {
 class IndexerBase;          /// "Cheshire Cat" implemention class for Indexer class
 class Indexer;              /// Interface class for indexing/quering  operation
+std::pair<std::string, std::string> forEachFile(const std::string&
+               , const XDGSearch::helperType& );    /// threaded function to populate each pool's database
 }
 
 class XDGSearch::IndexerBase final : public QObject {
@@ -38,7 +41,7 @@ friend class Indexer;
     void populateDB();      /// build database for the current pool
     void forEachHelper( const XDGSearch::helperType&
                       , const XDGSearch::poolType&
-                      , Xapian::WritableDatabase* );    /// threaded function to populate each pool's database
+                      , Xapian::WritableDatabase* );
     void seek(const std::string&);  /// build a queryresult object and write result to htmlResult string
     const Xapian::MSet enqueryDB(const std::string&) const; /// find a string in the current pool's database
     void setProgressBarValue();     /// determines values useful for the progress bar
