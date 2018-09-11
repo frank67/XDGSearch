@@ -1,6 +1,6 @@
 /* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016,2017  Franco Martelli
+    Copyright (C) 2016,2017,2018  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -166,8 +166,10 @@ void MainWindow::on_actionRebuild_current_Pool_triggered()
     XDGSearch::Indexer idx(this, ui ->poolCBox->currentData().value<XDGSearch::Pool>());  /// build indexer by passing the pool value pointed from poolCBox
 
     QObject::connect(&idx, &XDGSearch::Indexer::progressValue, &this->progressBar, &QProgressBar::setValue);
-    idx.populateDB();   /// rebuild and overwrite the database
-    ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  /// displays " Done!" timed out by 2 seconds
+    if(idx.populateDB())    /// rebuild and overwrite the database
+        ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  /// displays " Done!" timed out by 2 seconds
+    else
+        ui ->statusBar->showMessage(QString(QObject::trUtf8(" Interrupted!")), 2000);  /// displays " Interrupted!" timed out by 2 seconds
     QTimer::singleShot(2000, &this->progressBar, SLOT(hide()));  /// hide progressBar timed out by 2 seconds
 }
 
@@ -191,7 +193,7 @@ void MainWindow::on_actionRebuild_All_triggered()
         t ->join();
     }
 
-    ui->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);   /// displays " Done!" timed out by 2 seconds
+    //ui->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);   /// displays " Done!" timed out by 2 seconds
     progressBar.setValue(100);
     QTimer::singleShot(2000, &this->progressBar, SLOT(hide()));  /// hide progressBar timed out by 2 seconds
 }
@@ -200,7 +202,8 @@ void XDGSearch::rebuildDB(const XDGSearch::Pool& p)
 {
     XDGSearch::Indexer idx(nullptr, p);
 
-    idx.populateDB();
+    if( !idx.populateDB())
+        ;
 }
 
 void MainWindow::on_actionPreferences_triggered()
@@ -248,7 +251,7 @@ void MainWindow::on_actionAbout_triggered()
                         + title
                         + "</span></p><p>Based on QT "
                         + QT_VERSION_STR
-                        + "</p><p>Copyright &copy; 2016,2017 Franco Martelli All rights reserved.</p>"
+                        + "</p><p>Copyright &copy; 2016,2017,2018 Franco Martelli all rights reserved.</p>"
                         + "<p>The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE."
                         + "</p></body></html>";
 

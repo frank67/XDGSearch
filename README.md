@@ -34,23 +34,29 @@ doing so XDGSearch now has the necessary to auto-configure itself through the wi
 
 ## Getting XDGSearch
 ```
+XDGSearch was originally developed on Kubuntu 16.04.1 LTS with Qt Creator 3.5.1, now it's developed under Debian 9.x Stretch using Qt Creator 4.2.0 based on:
+- Qt 5.7.1
+- g++ (Debian 6.3.0-18+deb9u1) 6.3.0 20170516
+- libxapian-dev 1.4.3-2+deb9u1
+
+First install the development environment provided by the following packages:
+```
+~# apt-get install qt5-qmake qtbase5-dev-tools libxapian-dev qtbase5-dev:amd64 qt5-default
+```
+then get and build XDGSearch:
+```
 ~$ git clone https://github.com/frank67/XDGSearch
 ~$ cd XDGSearch
-~$ qmake xdgsearch.pro -r -spec linux-g++-64
+~$ /usr/lib/x86_64-linux-gnu/qt5/bin/qmake
 ~$ make -j5
 ~$ ./xdgsearch
 ```
-XDGSearch was developed on Kubuntu 16.04.1 LTS with Qt Creator 3.5.1
-based on:
-- Qt 5.5.1 (GCC 5.2.1 20151129, 64 bit)
-- g++ (Ubuntu 5.4.0-6ubuntu1~16.04.2) 5.4.0 20160609
-- libxapian-1.3-dev 1.3.4-0ubuntu6
 
 Dependencies :
 - libqt5core5a
 - libqt5widgets5
 - libqt5svg5
-- libxapian-1.3-5
+- libxapian30:amd64
 
 If you wish to give XDGSearch a try please follow these steps:
 - first open a terminal window (e.g. Konsole)

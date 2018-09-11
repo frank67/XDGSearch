@@ -1,6 +1,6 @@
 /* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016,2017  Franco Martelli
+    Copyright (C) 2016,2017,2018  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include <xapian.h>
 #include <forward_list>
 #include <QTemporaryDir>
-#include <QObject>
+#include <QWidget>
 #include "configuration.h"
 
 namespace XDGSearch {
@@ -33,23 +33,22 @@ std::pair<std::string, std::string> forEachFile(const std::string&
                , const XDGSearch::helperType& );    /// threaded function to populate each pool's database
 }
 
-class XDGSearch::IndexerBase final : public QObject {
+class XDGSearch::IndexerBase final : public QWidget {
     Q_OBJECT
 friend class Indexer;
     class queryResult;      /// nested class to provide answer for sought terms
-    IndexerBase(QObject*, const Pool&);
-    void populateDB();      /// build database for the current pool
+    IndexerBase(QWidget*, const Pool&);
+    bool populateDB();      /// build database for the current pool
     void forEachHelper( const XDGSearch::helperType&
                       , const XDGSearch::poolType&
                       , Xapian::WritableDatabase* );
     void seek(const std::string&);  /// build a queryresult object and write result to htmlResult string
     const Xapian::MSet enqueryDB(const std::string&) const; /// find a string in the current pool's database
-    void setProgressBarValue();     /// determines values useful for the progress bar
-    void resetProgressBarValue();   /// sets values for the progress bar to its initial values
-    double p_value, p_valueStep;    /// p_value: the value passed to setvalue member, p_valueStep: progress bar increment step
+    unsigned int determineNumberOfFiles();  /// counts the number of files to index
     std::unique_ptr<XDGSearch::Configuration> const conf;
     XDGSearch::poolType currentPoolSettings;
     std::string xdgKey, htmlResult;
+    unsigned int numberOfFiles;
 signals:
     void progressValue(int);
 };
@@ -63,12 +62,12 @@ private:
     std::string htmlResult, soughtTerms;
 };
 
-class XDGSearch::Indexer final : public QObject {
+class XDGSearch::Indexer final : public QWidget {
     Q_OBJECT
 public:
-    Indexer(QObject*, const XDGSearch::Pool&);
+    Indexer(QWidget*, const XDGSearch::Pool&);
     ~Indexer();
-    void populateDB()         { return d ->populateDB(); }
+    bool populateDB()         { return d ->populateDB(); }
     void seek(const std::string& s) { d ->seek(s); }
     std::string getResult() const   { return d ->htmlResult; }
 signals:
