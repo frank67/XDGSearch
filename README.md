@@ -33,7 +33,7 @@ to install, then in your home directory run the command:
 doing so XDGSearch now has the necessary to auto-configure itself through the wizard process.
 
 ## Getting XDGSearch
-```
+
 XDGSearch was originally developed on Kubuntu 16.04.1 LTS with Qt Creator 3.5.1, now it's developed under Debian 9.x Stretch using Qt Creator 4.2.0 based on:
 - Qt 5.7.1
 - g++ (Debian 6.3.0-18+deb9u1) 6.3.0 20170516
