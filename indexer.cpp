@@ -87,54 +87,56 @@ bool XDGSearch::IndexerBase::populateDB()
     QTemporaryDir tempDir;      /// provide an auto-remove temporary directory under /tmp
     while(!tempDir.isValid())   /// iterate until has a valid temporary directory name
         ;
-    std::istringstream iss(std::get<POOLHELPERS>(currentPoolSettings));   /// stringstream for comma separated helpers list
-    std::forward_list<XDGSearch::helperType> poolHelpers;       /// container for each helper of this pool
-
 
     const std::string  tmpDirName  =  tempDir.path().toStdString() + "/"
                      , DBName  =  std::get<LOCALPOOLNAME>(currentPoolSettings)
                      , tmpDBName  =  tmpDirName + DBName;       /// provides names for database and temporary database
 try {
-        /// try to create the temporary database under /tmp
+    /// try to create the temporary database under /tmp
     Xapian::WritableDatabase tmpDB( tmpDBName
                                   , Xapian::DB_CREATE
                                   , Xapian::DB_BACKEND_GLASS);
-    for(std::string h; std::getline(iss, h, ','); /* null */)   /// for each helper in the stringstream object
-        poolHelpers.push_front(conf ->enqueryHelper(h));        /// populate the container that holds items informations
 
-    numberOfFiles =0;
-    const auto& nof = determineNumberOfFiles();     /// amount of files to process, nof: Number Of Files
-    QProgressDialog progressDialog(this);
+    numberOfFiles =0;       /// stores the number of files processed during database building: 0 initial value
+    const auto& nof = determineNumberOfFiles();     /// amount of files to process, nof: grand total of Number Of Files
+    QProgressDialog progressDialog(this);       /// create a progress dialog window
+    /// progress dialog window setting stuff:
     progressDialog.setWindowModality(Qt::WindowModal);
     progressDialog.setCancelButtonText(QObject::trUtf8("&Cancel"));
     progressDialog.setRange(0, nof);
-    progressDialog.setWindowTitle(tr("Indexing Files"));
+    progressDialog.setWindowTitle(QObject::trUtf8("Indexing %1 files").arg(QString::fromStdString(DBName)));
     progressDialog.setMinimumDuration(0);
-    bool progressCanceled(false);
+    /// setting ends
+    bool progressCanceled(false);   /// it becomes true when the Cancel button of the progress dialog window is clicked
+    const unsigned int& threadsNumber = 30;     /// tweaked value of the amount of times the std::async function is called,
+                                                /// it gives best results on eight core CPU
+    std::forward_list<std::future<std::pair<std::string, std::string>>> futureContainer;    /// container for 30 std::future objects
+    std::istringstream issHlp(std::get<POOLHELPERS>(currentPoolSettings));   /// stringstream for comma separated helpers list
 
-    for(const auto& h : poolHelpers)    {   /// for each helper initializes a thread that's added to the container
-        if(std::get<HELPERNAME>(h).empty())          /// dummy checks, eventually skips empty helper
+    for(std::string h; std::getline(issHlp, h, ','); /* null */)   {   /// for each helper in the stringstream object
+        const auto& helper = conf ->enqueryHelper(h);       /// fetch the helper tuple object
+        if(std::get<HELPERNAME>(helper).empty())            /// dummy checks, eventually skips empty helper
             continue;
-        const std::string& stopWordsFile = "./stopwords/" + std::get<STOPWORDSFILE>(currentPoolSettings);
+        const std::string& stopWordsFile = "./stopwords/" + std::get<STOPWORDSFILE>(currentPoolSettings);   /// it gets the pathname of stopword file
 
-        Xapian::Stem stemmer(std::get<STEMMING>(currentPoolSettings));
+        Xapian::Stem stemmer(std::get<STEMMING>(currentPoolSettings));      /// it selects the stemming language set in the pool's configuration
         Xapian::TermGenerator indexer;
         Xapian::SimpleStopper sstopper;
-        std::fstream ifs(stopWordsFile);
+        std::fstream ifs(stopWordsFile);        /// it opens the stopwordfile
 
         indexer.set_stemmer(stemmer);
-        if(ifs) {       /// if the user set the stopwords file populate the simplestopper object
+        if(ifs) {       /// it checks if the user set the stopwords file, then populate the simplestopper object
             for(std::string s; std::getline(ifs, s); /* null */)
                 sstopper.add(s);
             indexer.set_stopper(&sstopper);
         }
 
-        std::istringstream iss(std::get<EXTENSIONS>(h));
+        std::istringstream issExt(std::get<EXTENSIONS>(helper));    /// stringstream object for comma separated extensions list
         QStringList filesExtensionFilter;   /// define a QT string list container that'll act as file extension filter
 
-        for(std::string e; std::getline(iss, e, ','); ) {
+        for(std::string e; std::getline(issExt, e, ','); ) {
             e = "*." + e;       /// prepare the string to add to the container, e.g.: *.pdf
-            filesExtensionFilter  << QString::fromStdString(e); /// populate the QStringList container
+            filesExtensionFilter  << QString::fromStdString(e); /// populates the QStringList container with the prepared extensions
         }
         /// define a file iterator that:
         QDirIterator dirIt( QString::fromStdString(std::get<POOLDIRPATH>(currentPoolSettings))    /// reads from the pool directory and so on
@@ -143,86 +145,96 @@ try {
                           , QDirIterator::Subdirectories | QDirIterator::FollowSymlinks );  /// recurse sub-directory and evaluate sym-links
 
         while(dirIt.hasNext())  {   /// outer loop: until file iterator reaches the end
-            const std::string& fileFullPathName = dirIt.next().toStdString();    /// fully qualified file name
-
-            auto ftr = std::async( XDGSearch::forEachFile
-                                                       , fileFullPathName
-                                                       , h );
-            const auto& pathAndCmdOutput = ftr.get();
-            progressDialog.setValue(++numberOfFiles);
-            progressDialog.setLabelText(tr("Indexing file number %1 of %n...", 0, nof).arg(numberOfFiles));
-            if (progressDialog.wasCanceled())   {
-                progressCanceled = true;
-                break;
+            for(unsigned int i = 0; i != threadsNumber; ++i )    {      /// loop to populate futureContainer with 30 std::future objects
+                const std::string& fileFullPathName = dirIt.next().toStdString();   /// fully qualified file name
+                futureContainer.push_front(std::async( XDGSearch::forEachFile       /// std::async calls forEachFile() function to create
+                                                       , fileFullPathName           /// a std::future object stored in futureContainer
+                                                       , helper ));
+                if( ! dirIt.hasNext())      /// if no more files to process then exit the loop
+                    break;
             }
-            const double& progressBarValue = double(numberOfFiles) / nof * 100.;
-            emit progressValue(progressBarValue);
+            for(auto& ftr : futureContainer)    {
+                const auto& pathAndCmdOutput = ftr.get();
+                progressDialog.setValue(++numberOfFiles);
+                progressDialog.setLabelText(QObject::trUtf8("Indexing file number %1 of %n...", 0, nof).arg(numberOfFiles));
+                progressDialog.resize(300,100);
 
-            unsigned int  linescounter = 0;
-            const unsigned int granularity = std::get<GRANULARITY>(h)
-                             , maxLinesCounted = granularity;
 
-            std::istringstream iss;
-            iss.str(pathAndCmdOutput.second);         /// recycle iss object, now holds the command standard output
+                if (progressDialog.wasCanceled())   {
+                    progressCanceled = true;
+                    break;
+                }
+                const double& progressBarValue = double(numberOfFiles) / nof * 100.;
+                emit progressValue(progressBarValue);
 
-            for(std::string line, para; !iss.eof(); /* null */ ) { /// inner loop: for each line of the command's standard output
-                getline(iss, line);
-                if(!iss.eof() && line.empty())      /// avoids empty lines
-                    continue;
-                if(!granularity)    {   /// if the user set to 0 then only first 15 lines are read, else...
-                    if (iss.eof() || linescounter == 15) {
+                unsigned int  linescounter = 0;
+                const unsigned int granularity = std::get<GRANULARITY>(helper)
+                        , maxLinesCounted = granularity;
 
-                        if(iss.eof())   {   /// if the eof is reached before the 15° line
-                            para += '\n';
-                            para += line;
+                std::istringstream issCmdOut(pathAndCmdOutput.second);  /// strigstream object, now holds the command standard output
+
+                for(std::string line, para; !issCmdOut.eof(); /* null */ ) { /// inner loop: for each line of the command's standard output
+                    getline(issCmdOut, line);
+                    if(!issCmdOut.eof() && line.empty())      /// avoids empty lines
+                        continue;
+                    if(!granularity)    {   /// if the user set to 0 then only first 15 lines are read, else...
+                        if (issCmdOut.eof() || linescounter == 15) {
+
+                            if(issCmdOut.eof())   {   /// if the eof is reached before the 15° line
+                                para += '\n';
+                                para += line;
+                            }
+
+                            Xapian::Document doc;   /// defines an empty document
+                            doc.set_data(para);     /// stores a 15 lines only paragraph into the document
+                            /// see: https://trac.xapian.org/wiki/FAQ/UniqueIds
+                            doc.add_term("P" + pathAndCmdOutput.first);   /// add fully qualified file name as "P" terms to the document
+
+                            indexer.set_document(doc);
+                            indexer.index_text(para);
+                            tmpDB.add_document(doc);  /// add the document to the database
+                            break;      /// job done for this standard output, breaks in order to process a new one
+
+                        } else {
+                            if(!para.empty())
+                                para += '\n';    /// if not empty then adds a new line
+
+                            para += line;       /// adds the line to the paragraph
+                            ++linescounter;     /// increment the counter
                         }
+                    } else {        /// ...else standard output will be split into blocks of granularity size
+                        if (issCmdOut.eof() || linescounter == maxLinesCounted) {
 
-                        Xapian::Document doc;   /// defines an empty document
-                        doc.set_data(para);     /// stores a 15 lines only paragraph into the document
-                        /// see: https://trac.xapian.org/wiki/FAQ/UniqueIds
-                        doc.add_term("P" + pathAndCmdOutput.first);   /// add fully qualified file name as "P" terms to the document
+                            if(issCmdOut.eof())   {
+                                para += '\n';
+                                para += line;
+                            }
 
-                        indexer.set_document(doc);
-                        indexer.index_text(para);
-                        tmpDB.add_document(doc);  /// add the document to the database
-                        break;      /// job done for this standard output, breaks in order to process a new one
+                            Xapian::Document doc;
+                            doc.set_data(para);
+                            doc.add_term("P" + pathAndCmdOutput.first);
 
-                    } else {
-                        if(!para.empty())
-                            para += '\n';    /// if not empty then adds a new line
+                            indexer.set_document(doc);
+                            indexer.index_text(para);
 
-                        para += line;       /// adds the line to the paragraph
-                        ++linescounter;     /// increment the counter
-                    }
-                } else {        /// ...else standard output will be split into blocks of granularity size
-                    if (iss.eof() || linescounter == maxLinesCounted) {
+                            tmpDB.add_document(doc);
 
-                        if(iss.eof())   {
-                            para += '\n';
+                            para.clear();       /// reset the paragraph
+                            linescounter = 0;   /// reset the counter
+
+                        } else {
+                            if(!para.empty())
+                                para += '\n';
+
                             para += line;
+                            ++linescounter;
                         }
-
-                        Xapian::Document doc;
-                        doc.set_data(para);
-                        doc.add_term("P" + pathAndCmdOutput.first);
-
-                        indexer.set_document(doc);
-                        indexer.index_text(para);
-
-                        tmpDB.add_document(doc);
-
-                        para.clear();       /// reset the paragraph
-                        linescounter = 0;   /// reset the counter
-
-                    } else {
-                        if(!para.empty())
-                            para += '\n';
-
-                        para += line;
-                        ++linescounter;
                     }
                 }
             }
+            futureContainer.clear();
+            if(progressCanceled)
+                break;
         }
     if(progressCanceled)
         break;

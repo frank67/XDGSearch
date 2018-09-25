@@ -48,7 +48,7 @@ friend class Indexer;
     std::unique_ptr<XDGSearch::Configuration> const conf;
     XDGSearch::poolType currentPoolSettings;
     std::string xdgKey, htmlResult;
-    unsigned int numberOfFiles;
+    unsigned int numberOfFiles;     /// stores the number of files processed during database building
 signals:
     void progressValue(int);
 };
