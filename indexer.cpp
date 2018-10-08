@@ -147,87 +147,73 @@ try {
         while(dirIt.hasNext())  {   /// outer loop: until file iterator reaches the end
             for(unsigned int i = 0; i != threadsNumber; ++i )    {      /// loop to populate futureContainer with 30 std::future objects
                 const std::string& fileFullPathName = dirIt.next().toStdString();   /// fully qualified file name
-                futureContainer.push_front(std::async( XDGSearch::forEachFile       /// std::async calls forEachFile() function to create
+                futureContainer.emplace_front(std::async( XDGSearch::forEachFile    /// std::async calls forEachFile() function to create
                                                        , fileFullPathName           /// a std::future object stored in futureContainer
                                                        , helper ));
                 if( ! dirIt.hasNext())      /// if no more files to process then exit the loop
                     break;
             }
+            futureContainer.reverse();  /// it gives best results versus emplace_after() with before_begin iterator
             for(auto& ftr : futureContainer)    {
-                const auto& pathAndCmdOutput = ftr.get();
-                progressDialog.setValue(++numberOfFiles);
+                const auto& pathAndCmdOutput = ftr.get();   /// it fetch results
+                progressDialog.setValue(++numberOfFiles);   /// it increments numberOfFiles then pass the value to the dialog window
                 progressDialog.setLabelText(QObject::trUtf8("Indexing file number %1 of %n...", 0, nof).arg(numberOfFiles));
-                progressDialog.resize(300,100);
+                progressDialog.resize(300,100);     /// it resizes the dialog window to x:300, y:100 pixel
 
 
-                if (progressDialog.wasCanceled())   {
-                    progressCanceled = true;
-                    break;
+                if (progressDialog.wasCanceled())   {   /// if the Cancel button of the progress dialog window is cliked then
+                    progressCanceled = true;            /// set progressCanceled to true then
+                    break;                              /// it exits the loop
                 }
-                const double& progressBarValue = double(numberOfFiles) / nof * 100.;
-                emit progressValue(progressBarValue);
+                const double& progressBarValue = double(numberOfFiles) / nof * 100.;    /// it calculates the progress value in percent
+                emit progressValue(progressBarValue);   /// it emits signal caught by mainwindow progressBar object
 
-                unsigned int  linescounter = 0;
-                const unsigned int granularity = std::get<GRANULARITY>(helper)
-                        , maxLinesCounted = granularity;
+                unsigned int  linescounter = 0;     /// this variable keeps track of the document amount of lines
+                const unsigned int &granularity = std::get<GRANULARITY>(helper);    /// granularity stands for the amount of lines a document must have
 
                 std::istringstream issCmdOut(pathAndCmdOutput.second);  /// strigstream object, now holds the command standard output
 
-                for(std::string line, para; !issCmdOut.eof(); /* null */ ) { /// inner loop: for each line of the command's standard output
+                for(std::string line, paragraph; ! issCmdOut.eof() ; /* null */ ) {  /// inner loop: for each line of the command's standard output
                     getline(issCmdOut, line);
                     if(!issCmdOut.eof() && line.empty())      /// avoids empty lines
                         continue;
-                    if(!granularity)    {   /// if the user set to 0 then only first 15 lines are read, else...
-                        if (issCmdOut.eof() || linescounter == 15) {
 
-                            if(issCmdOut.eof())   {   /// if the eof is reached before the 15° line
-                                para += '\n';
-                                para += line;
-                            }
+                    if(!granularity)    {   /// if the user set to 0 then only first 15 lines are read, else...
+                        if(!paragraph.empty())
+                            paragraph += '\n';  /// if not empty then adds a new line
+
+                        paragraph += line;      /// adds the line to the paragraph
+                        ++linescounter;         /// increment the counter
+                        if (issCmdOut.eof() || (linescounter == 15)) {
 
                             Xapian::Document doc;   /// defines an empty document
-                            doc.set_data(para);     /// stores a 15 lines only paragraph into the document
+                            doc.set_data(paragraph);     /// stores a 15 lines only paragraph into the document
                             /// see: https://trac.xapian.org/wiki/FAQ/UniqueIds
-                            doc.add_term("P" + pathAndCmdOutput.first);   /// add fully qualified file name as "P" terms to the document
+                            doc.add_term("P" + pathAndCmdOutput.first);     /// add fully qualified file name as "P" terms to the document
 
                             indexer.set_document(doc);
-                            indexer.index_text(para);
-                            tmpDB.add_document(doc);  /// add the document to the database
+                            indexer.index_text(paragraph);
+                            tmpDB.add_document(doc);    /// add the document to the database
                             break;      /// job done for this standard output, breaks in order to process a new one
-
-                        } else {
-                            if(!para.empty())
-                                para += '\n';    /// if not empty then adds a new line
-
-                            para += line;       /// adds the line to the paragraph
-                            ++linescounter;     /// increment the counter
                         }
                     } else {        /// ...else standard output will be split into blocks of granularity size
-                        if (issCmdOut.eof() || linescounter == maxLinesCounted) {
+                        if(!paragraph.empty())
+                            paragraph += '\n';      /// if not empty then adds a new line
 
-                            if(issCmdOut.eof())   {
-                                para += '\n';
-                                para += line;
-                            }
+                        paragraph += line;          /// adds the line to the paragraph
+                        ++linescounter;             /// increment the counter
+                        if (issCmdOut.eof() || (linescounter == granularity)) {
 
-                            Xapian::Document doc;
-                            doc.set_data(para);
-                            doc.add_term("P" + pathAndCmdOutput.first);
+                            Xapian::Document doc;       /// defines an empty document
+                            doc.set_data(paragraph);    /// it stores the granularity amount of lines paragraph into the document
+                            doc.add_term("P" + pathAndCmdOutput.first);     /// add fully qualified file name as "P" terms to the document
 
                             indexer.set_document(doc);
-                            indexer.index_text(para);
+                            indexer.index_text(paragraph);
+                            tmpDB.add_document(doc);    /// add the document to the database
 
-                            tmpDB.add_document(doc);
-
-                            para.clear();       /// reset the paragraph
-                            linescounter = 0;   /// reset the counter
-
-                        } else {
-                            if(!para.empty())
-                                para += '\n';
-
-                            para += line;
-                            ++linescounter;
+                            paragraph.clear();      /// reset the paragraph
+                            linescounter = 0;       /// reset the counter
                         }
                     }
                 }

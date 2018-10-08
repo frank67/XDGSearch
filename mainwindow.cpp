@@ -30,6 +30,8 @@
 #include <memory>
 #include <forward_list>
 #include <QTimer>
+//#include <chrono>
+//#include <iostream>
 
 namespace Ui {
     class MainWindow;
@@ -166,10 +168,15 @@ void MainWindow::on_actionRebuild_current_Pool_triggered()
     XDGSearch::Indexer idx(this, ui ->poolCBox->currentData().value<XDGSearch::Pool>());  /// build indexer by passing the pool value pointed from poolCBox
 
     QObject::connect(&idx, &XDGSearch::Indexer::progressValue, &this->progressBar, &QProgressBar::setValue);
+    //auto t1 = std::chrono::high_resolution_clock::now();
     if(idx.populateDB())    /// rebuild and overwrite the database
         ui ->statusBar->showMessage(QString(QObject::trUtf8(" Done!")), 2000);  /// displays " Done!" timed out by 2 seconds
     else
         ui ->statusBar->showMessage(QString(QObject::trUtf8(" Interrupted!")), 2000);  /// displays " Interrupted!" timed out by 2 seconds
+    /*auto t2 = std::chrono::high_resolution_clock::now();
+    auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    std::cout << "populateDB millisec : " << int_ms.count() << std::endl;
+*/
     QTimer::singleShot(2000, &this->progressBar, SLOT(hide()));  /// hide progressBar timed out by 2 seconds
 }
 
