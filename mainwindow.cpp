@@ -1,6 +1,6 @@
-/* XDGSearch is a XAPIAN based file indexer and search tool.
+﻿/* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016,2017,2018  Franco Martelli
+    Copyright (C) 2016,2017,2018,2019  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -137,7 +137,7 @@ bool MainWindow::maybeQuit()
 bool MainWindow::maybeBuildDB()
 {   /// dialog window to ask confirmation for build a database
     bool retval = false;
-    QMessageBox* mb = new QMessageBox(  QMessageBox::Question
+    QMessageBox* const mb = new QMessageBox(  QMessageBox::Question
                                       , QCoreApplication::applicationName()
                                       , QObject::trUtf8("Actually the database you are quering does not exist!\n"
                                                         "Do you want to build it now?")
@@ -215,7 +215,7 @@ void XDGSearch::rebuildDB(const XDGSearch::Pool& p)
 
 void MainWindow::on_actionPreferences_triggered()
 {   /// displays preference dialog
-    QDialog* d = new Preferences(this);
+    QDialog* const d = new Preferences(this);
     d->exec();
     delete d;
 }
@@ -227,6 +227,9 @@ void MainWindow::on_resultPane_anchorClicked(const QUrl& u)
 
 void MainWindow::on_sought_returnPressed()
 {   /// performs the query of the sought terms and it will display the database's documents that match the search
+    if(ui->sought->text().isEmpty())
+        return;
+
     const XDGSearch::Pool p = ui ->poolCBox->currentData().value<XDGSearch::Pool>();
     const QString statusBarMessage = QString(QObject::trUtf8(" Indexing: "))
                                    + ui ->poolCBox->currentText()
@@ -258,7 +261,7 @@ void MainWindow::on_actionAbout_triggered()
                         + title
                         + "</span></p><p>Based on QT "
                         + QT_VERSION_STR
-                        + "</p><p>Copyright &copy; 2016,2017,2018 Franco Martelli all rights reserved.</p>"
+                        + "</p><p>Copyright &copy; 2016,2017,2018,2019 Franco Martelli all rights reserved.</p>"
                         + "<p>The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE."
                         + "</p></body></html>";
 
@@ -275,7 +278,10 @@ void MainWindow::on_poolCBox_activated(int index)
 {   /// when triggered reset resultPane ui widget
     Q_UNUSED(index)
     ui ->sought->setFocus();
-    showSplashScreenText();
+    if(ui->sought->text().isEmpty())
+        showSplashScreenText();
+    else
+        on_sought_returnPressed();
 }
 
 void MainWindow::showSplashScreenText() const

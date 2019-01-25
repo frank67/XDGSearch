@@ -1,6 +1,6 @@
 /* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016,2017,2018  Franco Martelli
+    Copyright (C) 2016,2017,2018,2019  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ Helpers::Helpers(QWidget *parent) :
     ui->setupUi(this);  /// prepares the UI
     buttonOk = ui->buttonBox->button(QDialogButtonBox::Ok);     /// bind a pointer to buttonbox OK button
 
-    /// 4 connect to call proper member function (slot) when "clicked" signal is raised
+    /// 2 connect to call proper member function (slot) when "clicked" signal is raised
     QObject::connect(ui->buttonBox->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), SLOT(clicked_buttonBoxCancel()));
     QObject::connect(buttonOk, SIGNAL(clicked()), SLOT(clicked_buttonBoxOk()));
 

@@ -1,6 +1,6 @@
 ﻿/* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016,2017,2018  Franco Martelli
+    Copyright (C) 2016,2017,2018,2019  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 #include <future>
 
 
-XDGSearch::IndexerBase::IndexerBase(QWidget* parent, const Pool& p) :    /// initializes conf member with a Configuration object of Pool p type
+XDGSearch::IndexerBase::IndexerBase(QWidget* parent, const XDGSearch::Pool& p) :    /// initializes conf member with a Configuration object of Pool p type
           QWidget(parent)
         , conf(std::unique_ptr<XDGSearch::Configuration>(new XDGSearch::Configuration(p)))
         , numberOfFiles(0)
@@ -156,6 +156,7 @@ try {
             futureContainer.reverse();  /// it gives best results versus emplace_after() with before_begin iterator
             for(auto& ftr : futureContainer)    {
                 const auto& pathAndCmdOutput = ftr.get();   /// it fetch results
+                ftr.~future();                              /// it destroys the future object
                 progressDialog.setValue(++numberOfFiles);   /// it increments numberOfFiles then pass the value to the dialog window
                 progressDialog.setLabelText(QObject::trUtf8("Indexing file number %1 of %n...", 0, nof).arg(numberOfFiles));
                 progressDialog.resize(300,100);     /// it resizes the dialog window to x:300, y:100 pixel
@@ -271,8 +272,7 @@ std::pair<std::string, std::string> XDGSearch::forEachFile(const std::string& fi
 
     pclose(pipe);
 
-    const auto& retval = std::make_pair(fileFullPathName, cmdStdOut);
-    return retval;
+    return { fileFullPathName, cmdStdOut };     /// under c++11 we can list initialize the return value
 }
 
 const Xapian::MSet XDGSearch::IndexerBase::enqueryDB(const std::string& query_string) const
@@ -347,15 +347,19 @@ try {
                 iss.clear();
                 iss.str(soughtTerms);       /// recycle iss object now it holds the terms to search
                 /// iteration to achieve bolded sought terms effect when documentText will be added to composeHTML
-                for( std::string term
+                for( std::string term, term1
                    ; iss >> term
                    ; /* null */)
                 {
+                    term1 = term;
+                    if ( ! iss.eof())
+                        term += " ";        /// if it isn't the last term, it adds a trailing space to the sought term
+
                     for( decltype(documentText.indexOf(QString(""))) pos = documentText.indexOf(QString::fromStdString(term), 0, Qt::CaseInsensitive)
                        ; pos != -1
                        ; /* null */)
                     {
-                        documentText.insert(pos, "<span style=\" font-weight:600;\">"); /// add bold effect syntax
+                        documentText.insert(pos, "<span style=\" font-weight:600;\">"); /// it adds bold effect syntax
                         pos = documentText.indexOf( QString::fromStdString(term)
                                                   , pos
                                                   , Qt::CaseInsensitive); /// position at the term is located
@@ -363,6 +367,24 @@ try {
                         documentText.insert(pos, "</span>");    /// now pos it's after the term so insert the syntax needed for the bold effect
                         ++pos;  /// advance pos cursor so if there is another identical term will be located from the next statement
                         pos = documentText.indexOf( QString::fromStdString(term)
+                                                  , pos
+                                                  , Qt::CaseInsensitive);   /// looks for term again, if not found pos == -1 therefore quitting this loop
+                    }
+                    if ( ! iss.eof())
+                        term1 += "_";       /// if it isn't the last term, it adds a trailing underscore to the sought term
+
+                    for( decltype(documentText.indexOf(QString(""))) pos = documentText.indexOf(QString::fromStdString(term1), 0, Qt::CaseInsensitive)
+                       ; pos != -1
+                       ; /* null */)
+                    {
+                        documentText.insert(pos, "<span style=\" font-weight:600;\">"); /// it adds bold effect syntax
+                        pos = documentText.indexOf( QString::fromStdString(term1)
+                                                  , pos
+                                                  , Qt::CaseInsensitive); /// position at the term is located
+                        pos += term1.size();     /// advance pos cursor of the term size
+                        documentText.insert(pos, "</span>");    /// now pos it's after the term so insert the syntax needed for the bold effect
+                        ++pos;  /// advance pos cursor so if there is another identical term will be located from the next statement
+                        pos = documentText.indexOf( QString::fromStdString(term1)
                                                   , pos
                                                   , Qt::CaseInsensitive);   /// looks for term again, if not found pos == -1 therefore quitting this loop
                     }

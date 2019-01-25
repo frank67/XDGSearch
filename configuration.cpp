@@ -1,6 +1,6 @@
 ﻿/* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016,2017,2018  Franco Martelli
+    Copyright (C) 2016,2017,2018,2019  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ XDGSearch::Configuration::Configuration(const XDGSearch::Pool& p = Pool::END)
 }
 
 /// overload prefix increment operator on XDGSearch::Pool type
-const XDGSearch::Pool& XDGSearch::operator++(Pool& p)
+const XDGSearch::Pool& XDGSearch::operator++(XDGSearch::Pool& p)
 {
         switch(p)       {
                 case Pool::DESKTOP     : return p = Pool::TEMPLATES;
@@ -161,8 +161,9 @@ void XDGSearch::Settings::defaultSettings(const std::string& n = std::string())
 
 void XDGSearch::ConfigurationBase::defaultSettingsCommonCode(const std::string& XDGKeyword, const std::string& defaultName)
 {
-    const auto p = getXDGKeysDirPath(XDGKeyword);
-    const auto emptyP = std::make_pair(std::string(), std::string());
+    const auto& p = getXDGKeysDirPath(XDGKeyword);
+    const std::pair<std::string, std::string>& emptyP = { std::string(), std::string() };
+
     std::get<XDGPOOLNAME>(pools) = XDGKeyword;        /// assign the XDG key, e.g.: XDG_DESKTOP_DIR (see class ctor)
     if(p != emptyP) {
         std::get<LOCALPOOLNAME>(pools) = p.first;       /// assign localized pool name

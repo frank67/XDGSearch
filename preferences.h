@@ -1,6 +1,6 @@
 /* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016,2017,2018  Franco Martelli
+    Copyright (C) 2016,2017,2018,2019  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ private:
     std::unique_ptr<XDGSearch::Configuration> const conf;
     QString selectedHelper;
     bool isNameAdding, isDialogWindowShown;
-    QListWidgetItem *newItemAdded;
+    QListWidgetItem* newItemAdded;
     int currentTabNumber;
 
     void toggleWidgetOnEditing();

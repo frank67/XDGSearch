@@ -1,6 +1,6 @@
 /* XDGSearch is a XAPIAN based file indexer and search tool.
 
-    Copyright (C) 2016,2017,2018  Franco Martelli
+    Copyright (C) 2016,2017,2018,2019  Franco Martelli
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,9 +67,9 @@ class XDGSearch::Indexer final : public QWidget {
 public:
     Indexer(QWidget*, const XDGSearch::Pool&);
     ~Indexer();
-    bool populateDB()         { return d ->populateDB(); }
-    void seek(const std::string& s) { d ->seek(s); }
-    std::string getResult() const   { return d ->htmlResult; }
+    bool populateDB() const                 { return d ->populateDB(); }
+    void seek(const std::string& s) const   { d ->seek(s); }
+    std::string getResult() const           { return d ->htmlResult; }
 signals:
     void progressValue(int);
 private:
