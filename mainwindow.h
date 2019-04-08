@@ -41,7 +41,9 @@ class MainWindow final : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget* parent = 0);
+    explicit MainWindow(QWidget* parent = nullptr);
+    MainWindow(MainWindow&&) = delete;
+    MainWindow& operator=(MainWindow&&) = delete;
     ~MainWindow();
 private slots:
     void on_actionHistory_triggered();      /// 5 slot invoked by each popup menu item

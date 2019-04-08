@@ -33,6 +33,8 @@ class Helpers : public QDialog
     Q_OBJECT
 public:
     explicit Helpers(QWidget *parent = 0);
+    Helpers(Helpers&&) = delete;
+    Helpers& operator=(Helpers&&) = delete;
     ~Helpers();
     const QString getHelperName() const   { return selectedHelper; }
 private slots:

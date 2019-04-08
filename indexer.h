@@ -56,6 +56,9 @@ signals:
 class XDGSearch::IndexerBase::queryResult final   {
 public:
     queryResult(const std::string&, const Xapian::MSet&);   /// ctor that handle the query answers
+    queryResult(queryResult&&) = delete;
+    queryResult& operator=(queryResult&&) = delete;
+    ~queryResult() = default;
     std::string getResult() const   { return htmlResult; }  /// return an html formatted text suitable to an html viewer widget
 private:
     std::string composeResult(const Xapian::MSet&);     /// translate the query answer to an html formatted string
@@ -66,6 +69,8 @@ class XDGSearch::Indexer final : public QWidget {
     Q_OBJECT
 public:
     Indexer(QWidget*, const XDGSearch::Pool&);
+    Indexer(Indexer&&) = delete;
+    Indexer& operator=(Indexer&&) = delete;
     ~Indexer();
     bool populateDB() const                 { return d ->populateDB(); }
     void seek(const std::string& s) const   { d ->seek(s); }

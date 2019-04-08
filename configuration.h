@@ -112,6 +112,9 @@ class XDGSearch::Configuration final {
 public:
     Configuration();
     explicit Configuration(const Pool&);
+    Configuration(Configuration&&) = delete;
+    Configuration& operator=(Configuration&&) = delete;
+    ~Configuration() = default;
 
     const poolType getPools() const             { return d ->pools; }
     void defaultSettings(const std::string& s) const    { d ->defaultSettings(s); }
@@ -136,39 +139,39 @@ private:
 };
 
 class XDGSearch::cfgDesktop final : public ConfigurationBase {
-    void defaultSettings(const std::string&) override;
+    void defaultSettings(const std::string&) final;
 };
 
 class XDGSearch::cfgTemplates final : public ConfigurationBase {
-    void defaultSettings(const std::string&) override;
+    void defaultSettings(const std::string&) final;
 };
 
 class XDGSearch::cfgPublicShare final : public ConfigurationBase {
-    void defaultSettings(const std::string&) override;
+    void defaultSettings(const std::string&) final;
 };
 
 class XDGSearch::cfgDocuments final : public ConfigurationBase {
-    void defaultSettings(const std::string&) override;
+    void defaultSettings(const std::string&) final;
 };
 
 class XDGSearch::cfgMusic final : public ConfigurationBase {
-    void defaultSettings(const std::string&) override;
+    void defaultSettings(const std::string&) final;
 };
 
 class XDGSearch::cfgPictures final : public ConfigurationBase {
-    void defaultSettings(const std::string&) override;
+    void defaultSettings(const std::string&) final;
 };
 
 class XDGSearch::cfgVideos final : public ConfigurationBase {
-    void defaultSettings(const std::string&) override;
+    void defaultSettings(const std::string&) final;
 };
 
 class XDGSearch::cfgSources final : public ConfigurationBase {
-    void defaultSettings(const std::string&) override;
+    void defaultSettings(const std::string&) final;
 };
 
 class XDGSearch::Settings final : public ConfigurationBase {
-    void defaultSettings(const std::string&) override;
+    void defaultSettings(const std::string&) final;
 };
 
 inline
@@ -178,4 +181,3 @@ XDGSearch::Configuration::Configuration()
 }
 
 #endif /// XDGSEARCH_INCLUDED_CONFIGURATION_H
-

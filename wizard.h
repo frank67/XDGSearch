@@ -42,7 +42,9 @@ class Wizard final : public QWizard
 {
     Q_OBJECT
 public:
-    explicit Wizard(QWidget *parent = 0);
+    explicit Wizard(QWidget *parent = nullptr);
+    Wizard(Wizard&&) = delete;
+    Wizard& operator=(Wizard&&) = delete;
     ~Wizard();
 protected:
     bool validateCurrentPage() Q_DECL_OVERRIDE;     /// calls proper validatePage*() function member

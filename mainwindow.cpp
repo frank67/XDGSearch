@@ -112,7 +112,7 @@ bool MainWindow::maybeQuit()
     if(conf ->askForConfirmation())
         return true;    /// the user has disabled the close window dialog (the checkBox was clicked)
 
-    bool retval = false;
+    bool&& retval = false;
     /// a dialog will be shown to ask for confirmation to close window
     QMessageBox* const mb = new QMessageBox(  QMessageBox::Question
                                       , QCoreApplication::applicationName()
@@ -136,7 +136,7 @@ bool MainWindow::maybeQuit()
 
 bool MainWindow::maybeBuildDB()
 {   /// dialog window to ask confirmation for build a database
-    bool retval = false;
+    bool&& retval = false;
     QMessageBox* const mb = new QMessageBox(  QMessageBox::Question
                                       , QCoreApplication::applicationName()
                                       , QObject::trUtf8("Actually the database you are quering does not exist!\n"

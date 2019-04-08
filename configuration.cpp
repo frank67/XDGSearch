@@ -149,7 +149,7 @@ void XDGSearch::Settings::defaultSettings(const std::string& n = std::string())
     Q_UNUSED(n);
 
     settings.beginGroup("helpers");
-    const auto keys = settings.childKeys();
+    const auto&& keys = settings.childKeys();
     settings.remove("");
     settings.endGroup();
 
@@ -161,8 +161,8 @@ void XDGSearch::Settings::defaultSettings(const std::string& n = std::string())
 
 void XDGSearch::ConfigurationBase::defaultSettingsCommonCode(const std::string& XDGKeyword, const std::string& defaultName)
 {
-    const auto& p = getXDGKeysDirPath(XDGKeyword);
-    const std::pair<std::string, std::string>& emptyP = { std::string(), std::string() };
+    const auto&& p = getXDGKeysDirPath(XDGKeyword);
+    const std::pair<std::string, std::string>&& emptyP = { std::string(), std::string() };
 
     std::get<XDGPOOLNAME>(pools) = XDGKeyword;        /// assign the XDG key, e.g.: XDG_DESKTOP_DIR (see class ctor)
     if(p != emptyP) {
@@ -178,17 +178,17 @@ void XDGSearch::ConfigurationBase::defaultSettingsCommonCode(const std::string& 
 
 const std::pair<std::string, std::string> XDGSearch::ConfigurationBase::getXDGKeysDirPath(const std::string& XDGKey)
 {
-    std::pair<std::string, std::string> retval;     /// define an empty return value
+    std::pair<std::string, std::string>&& retval = { std::string(), std::string() };     /// define an empty return value
 
-    auto key = XDGKey.substr(4);        /// retrieve the xdg key name: strip "XDG_" part
-    auto posToDel = key.find("_");
+    auto&& key = XDGKey.substr(4);        /// retrieve the xdg key name: strip "XDG_" part
+    auto&& posToDel = key.find("_");
     if(posToDel != std::string::npos)
         key.erase(posToDel);            /// now strip "_DIR" part
 
     const std::string cmd = std::string("xdg-user-dir ")    /// start command line with command name
                           + key;                            /// command line argument
 
-    std::string cmdStdOut;      /// container that'll hold the command's standard output
+    std::string&& cmdStdOut = "";      /// container that'll hold the command's standard output
 
     FILE* pipe = popen(cmd.c_str(), "r");   /// runs the command
     if (!pipe)
@@ -206,7 +206,7 @@ const std::pair<std::string, std::string> XDGSearch::ConfigurationBase::getXDGKe
     if(std::count(cmdStdOut.cbegin(), cmdStdOut.cend(), '/') != 3)  /// dummy check: regular standard output has 3 slash
         return retval;
 
-    auto posStartName = cmdStdOut.find_last_of("/");
+    const auto&& posStartName = cmdStdOut.find_last_of("/");
     if(posStartName != std::string::npos)   {
         retval.first = cmdStdOut.substr(posStartName + 1);  /// the localized pool name
         retval.second = cmdStdOut;                          /// fully qualified path name of the pool
@@ -227,7 +227,7 @@ const std::pair<std::string, std::string> XDGSearch::ConfigurationBase::getXDGKe
 
 bool XDGSearch::ConfigurationBase::isFirstRun()
 {
-    const auto workingDir = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    const auto&& workingDir = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
 
     const QDir appDBDir;
     appDBDir.mkpath(workingDir);
@@ -271,7 +271,7 @@ bool XDGSearch::ConfigurationBase::isFirstRun()
         sw_english.close();
     }
     settings.beginGroup("global");      /// test is first run checking askQuitConfirmation key in xdgsearch.conf
-    bool retval = settings.contains("askQuitConfirmation");
+    const bool&& retval = settings.contains("askQuitConfirmation");
     settings.endGroup();
     return !retval;
 }
@@ -318,7 +318,7 @@ const XDGSearch::helperType XDGSearch::ConfigurationBase::enqueryHelper(const st
 {
     XDGSearch::helperType retval;       /// define an empty return value
     settings.beginGroup("helpers");
-    bool b = settings.value(QString::fromStdString(h)).toBool();  /// checks if the queried helper is enabled
+    bool&& b = settings.value(QString::fromStdString(h)).toBool();  /// checks if the queried helper is enabled
     if(b)         /// if true then populate the retval tuple object
     {
         settings.endGroup();
@@ -339,11 +339,11 @@ const XDGSearch::poolType XDGSearch::ConfigurationBase::enqueryPool()
 
     settings.beginGroup(QString::fromStdString(std::get<XDGPOOLNAME>(pools)));
 
-    std::get<LOCALPOOLNAME>(pools) = settings.value("localpoolname").toString().toStdString();  /// query pool section items in .conf file
-    std::get<POOLHELPERS>(pools) = settings.value("poolhelpers"  ).toString().toStdString();
-    std::get<POOLDIRPATH>(pools) = settings.value("pooldirpath"  ).toString().toStdString();
-    std::get<STEMMING>(pools) = settings.value("stemmed"      ).toString().toStdString();
-    std::get<STOPWORDSFILE>(pools) = settings.value("stopwordsfile").toString().toStdString();
+    std::get<LOCALPOOLNAME>(pools)  = settings.value("localpoolname"    ).toString().toStdString();  /// query pool section items in .conf file
+    std::get<POOLHELPERS>(pools)    = settings.value("poolhelpers"      ).toString().toStdString();
+    std::get<POOLDIRPATH>(pools)    = settings.value("pooldirpath"      ).toString().toStdString();
+    std::get<STEMMING>(pools)       = settings.value("stemmed"          ).toString().toStdString();
+    std::get<STOPWORDSFILE>(pools)  = settings.value("stopwordsfile"    ).toString().toStdString();
 
     settings.endGroup();
     return pools;
@@ -361,7 +361,7 @@ void XDGSearch::ConfigurationBase::removeHelper(const std::string& h)
 bool XDGSearch::ConfigurationBase::askForConfirmation()
 {
     settings.beginGroup("global");
-    bool retval = settings.value("askQuitConfirmation", false).toBool();    /// query quit confirmation, if not set return false
+    const bool&& retval = settings.value("askQuitConfirmation", false).toBool();    /// query quit confirmation, if not set return false
     settings.endGroup();
     return retval;
 }
@@ -376,7 +376,7 @@ void XDGSearch::ConfigurationBase::saveMainWindowGeometry(const QByteArray& g)
 const QByteArray XDGSearch::ConfigurationBase::readMainWindowGeometry()
 {
     settings.beginGroup("global");
-    const auto retval = settings.value("geometry", QByteArray()).toByteArray();
+    const auto&& retval = settings.value("geometry", QByteArray()).toByteArray();
     settings.endGroup();
     return retval;
 }
@@ -390,9 +390,9 @@ void XDGSearch::ConfigurationBase::setAskForConfirmation(bool b)
 
 bool XDGSearch::ConfigurationBase::isPopulatedDB(const Pool& p)
 {
-    const std::string k = toXDGKey(p);      /// convert to std::string the sought pool
+    const std::string&& k = toXDGKey(p);      /// convert to std::string the sought pool
     settings.beginGroup(QString::fromStdString(k));
-    const auto dbName = settings.value("localpoolname").toString();     /// looks for the local pool name in .conf file
+    const auto&& dbName = settings.value("localpoolname").toString();     /// looks for the local pool name in .conf file
     settings.endGroup();
     const QDir d(dbName);     /// try to open the directory of the database
 
@@ -401,7 +401,7 @@ bool XDGSearch::ConfigurationBase::isPopulatedDB(const Pool& p)
 
 const std::string XDGSearch::toXDGKey(const XDGSearch::Pool& p)
 {
-    std::string retval;
+    std::string&& retval = "";
     switch(p)       {
     case Pool::DESKTOP :
         retval = "XDG_DESKTOP_DIR";
@@ -438,7 +438,7 @@ const std::string XDGSearch::toXDGKey(const XDGSearch::Pool& p)
 QStringList XDGSearch::ConfigurationBase::getHelpersNameList()
 {
     settings.beginGroup("helpers");
-    const auto retval = settings.childKeys();   /// retrieve the list of all helpers in .conf file
+    const auto&& retval = settings.childKeys();   /// retrieve the list of all helpers in .conf file
     settings.endGroup();
 
     return retval;
@@ -454,7 +454,7 @@ void XDGSearch::ConfigurationBase::addHelperToPool(const std::string& h)
 const std::string XDGSearch::ConfigurationBase::getPoolOnStartup()
 {
     settings.beginGroup("global");
-    const std::string retval = settings.value("poolOnStartup").toString().toStdString();
+    const std::string&& retval = settings.value("poolOnStartup").toString().toStdString();
     settings.endGroup();
     return retval;
 }

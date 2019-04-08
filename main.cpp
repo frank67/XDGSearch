@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     parser.process(app);
 
     const XDGSearch::Configuration conf;
-    bool b = conf.isFirstRun();
+    const bool&& b = conf.isFirstRun();
 
     if(b)   {
         Wizard wiz;

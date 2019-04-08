@@ -69,6 +69,8 @@ Preferences::~Preferences()
 {
     delete ui;
     delete newItemAdded;
+    delete buttonApply;
+    delete buttonOk;
 }
 
 void Preferences::fillPageInitValue() const
@@ -295,9 +297,9 @@ void Preferences::on_tabWidget_currentChanged(int index)
 
         msgBox->setInformativeText("Do you want to save your changes?");
         msgBox->setDefaultButton(QMessageBox::Save);
-        const int ret = msgBox->exec();
+        const int&& retval = msgBox->exec();
         isDialogWindowShown = false;
-        switch (ret) {
+        switch (retval) {
           case QMessageBox::Save:
               // Save was clicked
               buttonApply->clicked();
@@ -382,8 +384,8 @@ void Preferences::on_helperDefaults_clicked() /// restores the helpers list to t
 {
     conf ->defaultSettings("");
     refreshallHelpersList();
-    buttonOk->setEnabled(true);
-    buttonApply->setEnabled(false);
+
+    buttonOk->setEnabled(true); buttonApply->setEnabled(false);
 }
 
 void Preferences::toggleWidgetOnEditing()  /// when a field is edited accordingly sets buttons and list

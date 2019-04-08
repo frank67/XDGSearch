@@ -50,7 +50,7 @@ XDGSearch::Indexer::~Indexer()
 
 unsigned int XDGSearch::IndexerBase::determineNumberOfFiles()
 {
-    unsigned int retval =0;
+    unsigned int&& retval =0;
 
     std::istringstream iss(std::get<POOLHELPERS>(currentPoolSettings));   /// stringstream for comma separated helpers list
     std::forward_list<XDGSearch::helperType> poolHelpers;       /// container for each helper of this pool
@@ -98,7 +98,7 @@ try {
                                   , Xapian::DB_BACKEND_GLASS);
 
     numberOfFiles =0;       /// stores the number of files processed during database building: 0 initial value
-    const auto& nof = determineNumberOfFiles();     /// amount of files to process, nof: grand total of Number Of Files
+    const auto&& nof = determineNumberOfFiles();     /// amount of files to process, nof: grand total of Number Of Files
     QProgressDialog progressDialog(this);       /// create a progress dialog window
     /// progress dialog window setting stuff:
     progressDialog.setWindowModality(Qt::WindowModal);
@@ -108,7 +108,7 @@ try {
     progressDialog.setMinimumDuration(0);
     /// setting ends
     bool progressCanceled(false);   /// it becomes true when the Cancel button of the progress dialog window is clicked
-    const unsigned int& threadsNumber = 30;     /// tweaked value of the amount of times the std::async function is called,
+    const unsigned int&& threadsNumber = 30;     /// tweaked value of the amount of times the std::async function is called,
                                                 /// it gives best results on eight core CPU
     std::forward_list<std::future<std::pair<std::string, std::string>>> futureContainer;    /// container for 30 std::future objects
     std::istringstream issHlp(std::get<POOLHELPERS>(currentPoolSettings));   /// stringstream for comma separated helpers list
@@ -166,11 +166,11 @@ try {
                     progressCanceled = true;            /// set progressCanceled to true then
                     break;                              /// it exits the loop
                 }
-                const double& progressBarValue = double(numberOfFiles) / nof * 100.;    /// it calculates the progress value in percent
+                const double&& progressBarValue = double(numberOfFiles) / nof * 100.;    /// it calculates the progress value in percent
                 emit progressValue(progressBarValue);   /// it emits signal caught by mainwindow progressBar object
 
-                unsigned int  linescounter = 0;     /// this variable keeps track of the document amount of lines
-                const unsigned int &granularity = std::get<GRANULARITY>(helper);    /// granularity stands for the amount of lines a document must have
+                unsigned int&&  linescounter = 0;     /// this variable keeps track of the document amount of lines
+                const unsigned int& granularity = std::get<GRANULARITY>(helper);    /// granularity stands for the amount of lines a document must have
 
                 std::istringstream issCmdOut(pathAndCmdOutput.second);  /// strigstream object, now holds the command standard output
 
